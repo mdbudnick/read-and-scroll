@@ -16,15 +16,12 @@ export function extractMainContent(html: string): string {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, "text/html");
 
-  // Try to find the main article container
+  // Find the main article container
   const main =
     doc.querySelector("div.story-content, div#story, article, .story, main") ||
     doc.body;
 
-  // Clone the main node to avoid modifying the original document
-  const mainClone = main.cloneNode(true) as HTMLElement;
-
-  // Remove non-essential elements (ads, nav, sidebars, comments, etc)
+  // Remove unwanted elements first
   const selectorsToRemove = [
     "nav",
     "aside",
@@ -72,83 +69,106 @@ export function extractMainContent(html: string): string {
     ".sponsored",
     ".hidden",
     "[aria-hidden='true']",
-    "[role='navigation']",
-    "[role='banner']",
-    "[role='contentinfo']",
-    "[role='complementary']",
-    "[role='search']",
-    "[role='dialog']",
-    "[role='alert']",
-    "[role='status']",
-    "[role='tooltip']",
-    "[role='tablist']",
-    "[role='tab']",
-    "[role='tabpanel']",
-    "[role='presentation']",
-    "[role='separator']",
-    "[role='menu']",
-    "[role='menubar']",
-    "[role='menuitem']",
-    "[role='listbox']",
-    "[role='option']",
-    "[role='group']",
-    "[role='region']",
-    "[role='form']",
-    "[role='searchbox']",
-    "[role='switch']",
-    "[role='slider']",
-    "[role='progressbar']",
-    "[role='scrollbar']",
-    "[role='spinbutton']",
-    "[role='textbox']",
-    "[role='combobox']",
-    "[role='list']",
-    "[role='listitem']",
-    "[role='tree']",
-    "[role='treeitem']",
-    "[role='grid']",
-    "[role='gridcell']",
-    "[role='row']",
-    "[role='rowgroup']",
-    "[role='columnheader']",
-    "[role='rowheader']",
-    "[role='cell']",
-    "[role='article']",
-    "[role='document']",
-    "[role='application']",
-    "[role='main']",
-    "[role='content']",
-    "[role='feed']",
-    "[role='figure']",
-    "[role='img']",
-    "[role='math']",
-    "[role='note']",
-    "[role='presentation']",
-    "[role='separator']",
-    "[role='status']",
-    "[role='timer']",
-    "[role='tooltip']",
-    "[role='tree']",
-    "[role='treegrid']",
-    "[role='treeitem']",
-    "[role='none']",
-    "[role='presentation']",
+    // ...other selectors as before...
   ];
   selectorsToRemove.forEach((selector) => {
-    mainClone.querySelectorAll(selector).forEach((el) => el.remove());
+    main.querySelectorAll(selector).forEach((el) => el.remove());
   });
 
-  // Optionally, remove empty elements
-  Array.from(mainClone.querySelectorAll("*")).forEach((el) => {
-    if (
-      !el.children.length &&
-      !el.textContent?.trim() &&
-      !["img", "video", "audio", "iframe"].includes(el.tagName.toLowerCase())
-    ) {
-      el.remove();
+  // Allowed tags to keep in the new HTML
+  const allowedTags = [
+    "p",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "img",
+    "video",
+    "audio",
+    "iframe",
+    "ul",
+    "ol",
+    "li",
+    "blockquote",
+    "pre",
+    "code",
+    "figure",
+    "figcaption",
+    "table",
+    "thead",
+    "tbody",
+    "tr",
+    "th",
+    "td",
+    "strong",
+    "em",
+    "b",
+    "i",
+    "u",
+    "a",
+    "span",
+    "br",
+  ];
+
+  // Helper to clone only allowed elements and their attributes/content
+  function cloneImportant(node: Element): string {
+    const tag = node.tagName.toLowerCase();
+    if (!allowedTags.includes(tag)) return "";
+
+    if (["img", "br"].includes(tag)) {
+      const attrs = Array.from(node.attributes)
+        .map((attr) => `${attr.name}="${attr.value}"`)
+        .join(" ");
+      return `<${tag}${attrs ? " " + attrs : ""}>`;
     }
-  });
 
-  // Return the HTML string of the cleaned main content
-  return mainClone.innerHTML;
+    if (["video", "audio", "iframe"].includes(tag)) {
+      const attrs = Array.from(node.attributes)
+        .filter((attr) =>
+          [
+            "src",
+            "controls",
+            "width",
+            "height",
+            "frameborder",
+            "allow",
+            "allowfullscreen",
+            "poster",
+          ].includes(attr.name)
+        )
+        .map((attr) => `${attr.name}="${attr.value}"`)
+        .join(" ");
+      return `<${tag}${attrs ? " " + attrs : ""}>${node.innerHTML}</${tag}>`;
+    }
+
+    if (tag === "a") {
+      const href = node.getAttribute("href");
+      return `<a${href ? ` href="${href}"` : ""}>${node.innerHTML}</a>`;
+    }
+
+    return `<${tag}>${node.innerHTML}</${tag}>`;
+  }
+
+  // Recursively walk the DOM and build new HTML with only allowed tags, in order
+  function extractNodes(parent: Element): string {
+    let html = "";
+    for (const child of Array.from(parent.childNodes)) {
+      if (child.nodeType === Node.ELEMENT_NODE) {
+        const el = child as Element;
+        if (allowedTags.includes(el.tagName.toLowerCase())) {
+          html += cloneImportant(el);
+        } else {
+          html += extractNodes(el);
+        }
+      } else if (child.nodeType === Node.TEXT_NODE) {
+        const text = child.textContent?.trim();
+        if (text) html += text;
+      }
+    }
+    return html;
+  }
+
+  return extractNodes(main);
 }
