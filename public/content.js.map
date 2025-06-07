@@ -1,0 +1,1 @@
+{"version":3,"file":"content.js","sources":["../src/content/index.ts"],"sourcesContent":["// Minimal content script for Read and Scroll\nconsole.log(\"Read and Scroll content script loaded.\");\n"],"names":[],"mappings":"AACA,QAAQ,IAAI,wCAAwC;"}
