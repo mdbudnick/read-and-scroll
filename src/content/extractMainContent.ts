@@ -1,4 +1,3 @@
-// Extracts main textual, image, and video/audio content from a Daily Kos article HTML string
 export interface MainContent {
   text: string;
   images: string[];
@@ -7,45 +6,149 @@ export interface MainContent {
 }
 
 /**
- * Extracts the main content from a Daily Kos article HTML string.
+ * Extracts the main content from a Daily Kos article HTML string,
+ * preserving the order and HTML structure of important elements,
+ * and keeping their original width, font, and text size.
  * @param html The HTML string of the article page.
- * @returns MainContent object with text, images, videos, and audios.
+ * @returns HTML string of the main content.
  */
-export function extractMainContent(html: string): MainContent {
+export function extractMainContent(html: string): string {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, "text/html");
 
-  // Main article text: look for repeated headlines, then main story blocks
-  const mainBlocks = Array.from(
-    doc.querySelectorAll("div.story-content, div#story, article, .story")
-  );
-  let text = "";
-  if (mainBlocks.length > 0) {
-    text = mainBlocks
-      .map((block) => block.textContent?.trim() || "")
-      .join("\n\n");
-  } else {
-    // fallback: get all paragraphs
-    text = Array.from(doc.querySelectorAll("p"))
-      .map((p) => p.textContent?.trim() || "")
-      .join("\n\n");
-  }
+  // Try to find the main article container
+  const main =
+    doc.querySelector("div.story-content, div#story, article, .story, main") ||
+    doc.body;
 
-  // Images: look for <img> tags in main content
-  const images = Array.from(doc.querySelectorAll("img"))
-    .map((img) => img.src)
-    .filter(Boolean);
+  // Clone the main node to avoid modifying the original document
+  const mainClone = main.cloneNode(true) as HTMLElement;
 
-  // Videos: look for <iframe> (YouTube, etc) and <video> tags
-  const videos = [
-    ...Array.from(doc.querySelectorAll("iframe")).map((f) => f.src),
-    ...Array.from(doc.querySelectorAll("video")).map((v) => v.src),
-  ].filter(Boolean);
+  // Remove non-essential elements (ads, nav, sidebars, comments, etc)
+  const selectorsToRemove = [
+    "nav",
+    "aside",
+    ".sidebar",
+    ".ad",
+    "[id*=ad]",
+    ".comments",
+    ".footer",
+    "footer",
+    "script",
+    "noscript",
+    "style",
+    "link[rel=stylesheet]",
+    "header",
+    ".share",
+    ".social",
+    ".newsletter",
+    ".related",
+    ".promo",
+    ".outbrain",
+    ".recommendations",
+    ".subscribe",
+    ".author-bio",
+    ".byline",
+    ".meta",
+    ".tools",
+    ".print",
+    ".mobile-nav",
+    ".desktop-nav",
+    ".site-header",
+    ".site-footer",
+    ".breadcrumb",
+    ".tags",
+    ".category",
+    ".copyright",
+    ".disclaimer",
+    ".modal",
+    ".popup",
+    ".overlay",
+    ".cookie",
+    ".gdpr",
+    ".banner",
+    ".announcement",
+    ".widget",
+    ".sponsored",
+    ".hidden",
+    "[aria-hidden='true']",
+    "[role='navigation']",
+    "[role='banner']",
+    "[role='contentinfo']",
+    "[role='complementary']",
+    "[role='search']",
+    "[role='dialog']",
+    "[role='alert']",
+    "[role='status']",
+    "[role='tooltip']",
+    "[role='tablist']",
+    "[role='tab']",
+    "[role='tabpanel']",
+    "[role='presentation']",
+    "[role='separator']",
+    "[role='menu']",
+    "[role='menubar']",
+    "[role='menuitem']",
+    "[role='listbox']",
+    "[role='option']",
+    "[role='group']",
+    "[role='region']",
+    "[role='form']",
+    "[role='searchbox']",
+    "[role='switch']",
+    "[role='slider']",
+    "[role='progressbar']",
+    "[role='scrollbar']",
+    "[role='spinbutton']",
+    "[role='textbox']",
+    "[role='combobox']",
+    "[role='list']",
+    "[role='listitem']",
+    "[role='tree']",
+    "[role='treeitem']",
+    "[role='grid']",
+    "[role='gridcell']",
+    "[role='row']",
+    "[role='rowgroup']",
+    "[role='columnheader']",
+    "[role='rowheader']",
+    "[role='cell']",
+    "[role='article']",
+    "[role='document']",
+    "[role='application']",
+    "[role='main']",
+    "[role='content']",
+    "[role='feed']",
+    "[role='figure']",
+    "[role='img']",
+    "[role='math']",
+    "[role='note']",
+    "[role='presentation']",
+    "[role='separator']",
+    "[role='status']",
+    "[role='timer']",
+    "[role='tooltip']",
+    "[role='tree']",
+    "[role='treegrid']",
+    "[role='treeitem']",
+    "[role='none']",
+    "[role='presentation']",
+  ];
+  selectorsToRemove.forEach((selector) => {
+    mainClone.querySelectorAll(selector).forEach((el) => el.remove());
+  });
 
-  // Audios: look for <audio> tags
-  const audios = Array.from(doc.querySelectorAll("audio"))
-    .map((a) => a.src)
-    .filter(Boolean);
+  // Optionally, remove empty elements
+  Array.from(mainClone.querySelectorAll("*")).forEach((el) => {
+    if (
+      !el.children.length &&
+      !el.textContent?.trim() &&
+      !["img", "video", "audio", "iframe"].includes(el.tagName.toLowerCase())
+    ) {
+      el.remove();
+    }
+  });
 
-  return { text, images, videos, audios };
+  // Return the HTML string of the cleaned main content
+  return mainClone.innerHTML;
 }
