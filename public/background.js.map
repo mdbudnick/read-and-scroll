@@ -1,1 +1,0 @@
-{"version":3,"file":"background.js","sources":["../src/background/index.ts"],"sourcesContent":["// Minimal background script for Read and Scroll\nchrome.runtime.onInstalled.addListener(() => {\n  console.log(\"Read and Scroll extension installed.\");\n});\n"],"names":[],"mappings":"AACA,OAAO,QAAQ,YAAY,YAAY,MAAM;AAC3C,UAAQ,IAAI,sCAAsC;AACpD,CAAC;"}
