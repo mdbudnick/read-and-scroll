@@ -75,8 +75,13 @@ export function extractMainContent(html: string): string {
     main.querySelectorAll(selector).forEach((el) => el.remove());
   });
 
-  // Allowed tags to keep in the new HTML
+  // Debug: log tag names of direct children
+  // Uncomment the next line to debug in browser
+  // console.log("Main children:", Array.from(main.children).map(e => e.tagName));
+
+  // Allowed tags to keep in the new HTML (add 'div')
   const allowedTags = [
+    "div", // add div to preserve block structure
     "p",
     "h1",
     "h2",
@@ -148,7 +153,8 @@ export function extractMainContent(html: string): string {
       return `<a${href ? ` href="${href}"` : ""}>${node.innerHTML}</a>`;
     }
 
-    return `<${tag}>${node.innerHTML}</${tag}>`;
+    // For div and other allowed tags, preserve children recursively
+    return `<${tag}>${extractNodes(node)}</${tag}>`;
   }
 
   // Recursively walk the DOM and build new HTML with only allowed tags, in order
@@ -163,12 +169,20 @@ export function extractMainContent(html: string): string {
           html += extractNodes(el);
         }
       } else if (child.nodeType === Node.TEXT_NODE) {
-        const text = child.textContent?.trim();
-        if (text) html += text;
+        // Preserve whitespace between blocks
+        const text = child.textContent;
+        if (text && text.replace(/\s/g, "").length > 0) html += text;
       }
     }
     return html;
   }
 
-  return extractNodes(main);
+  let result = extractNodes(main);
+
+  // Fallback: If result is empty, try extracting from body
+  if (!result.trim() && main !== doc.body) {
+    result = extractNodes(doc.body);
+  }
+
+  return result;
 }
