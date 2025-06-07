@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "build:dev": "vite build -m dev && cp src/manifest.json dist/manifest.json",
+    "build:dev": "vite build -m dev && cp manifest.json dist/manifest.json",
     "lint": "eslint .",
     "preview": "vite preview"
   },
