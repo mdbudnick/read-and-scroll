@@ -1,4 +1,4 @@
-import { Theme } from "./theme";
+import type { Theme, ThemeColors } from "./theme";
 
 export interface ElementStyles {
   container: string;
@@ -27,7 +27,7 @@ export interface ElementStyles {
   };
 }
 
-interface StylePreferences {
+export interface StylePreferences {
   width: string;
   fontSize: string;
   theme: "light" | "dark";

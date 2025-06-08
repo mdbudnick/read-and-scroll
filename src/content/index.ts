@@ -1,14 +1,8 @@
 import * as readability from "@mozilla/readability";
-import { themes } from "./theme";
-import { generateCSS } from "./styles";
-
-interface StylePreferences {
-  width: string;
-  fontSize: string;
-  theme: "light" | "dark";
-  imageSize: "normal" | "large" | "small";
-  fontWeight: "normal" | "bold";
-}
+import { themes } from "./styles/theme";
+import { generateCSS } from "./styles/reader";
+import { controlStyles } from "./styles/controls";
+import type { StylePreferences } from "./styles/reader";
 
 const defaultPreferences: StylePreferences = {
   width: "50%",
@@ -18,15 +12,86 @@ const defaultPreferences: StylePreferences = {
   fontWeight: "normal",
 };
 
+const sizes = [
+  { label: "Aa", size: "14px", class: "small" },
+  { label: "Aa", size: "18px", class: "medium" },
+  { label: "Aa", size: "22px", class: "large" },
+] as const;
+
 let currentPreferences = { ...defaultPreferences };
+
+function createControls() {
+  const controls = document.createElement("div");
+  controls.id = "read-and-scroll-controls";
+
+  // Theme toggle
+  const themeToggle = document.createElement("div");
+  themeToggle.className = "theme-toggle";
+
+  const lightButton = document.createElement("button");
+  lightButton.innerHTML = "☀️";
+  lightButton.className = currentPreferences.theme === "light" ? "active" : "";
+  lightButton.addEventListener("click", () => updateStyles({ theme: "light" }));
+
+  const darkButton = document.createElement("button");
+  darkButton.innerHTML = "🌙";
+  darkButton.className = currentPreferences.theme === "dark" ? "active" : "";
+  darkButton.addEventListener("click", () => updateStyles({ theme: "dark" }));
+
+  themeToggle.appendChild(lightButton);
+  themeToggle.appendChild(darkButton);
+
+  // Font size controls
+  const fontSizes = document.createElement("div");
+  fontSizes.className = "font-sizes";
+
+  sizes.forEach(({ label, size, class: className }) => {
+    const button = document.createElement("button");
+    button.textContent = label;
+    button.className = `font-size-button ${className} ${
+      currentPreferences.fontSize === size ? "active" : ""
+    }`;
+    button.addEventListener("click", () => updateStyles({ fontSize: size }));
+    fontSizes.appendChild(button);
+  });
+
+  controls.appendChild(themeToggle);
+  controls.appendChild(fontSizes);
+
+  document.body.appendChild(controls);
+}
 
 // Function to update styles
 function updateStyles(newPrefs: Partial<StylePreferences>) {
   const styleEl = document.getElementById("read-and-scroll-styles");
   if (styleEl) {
     const updatedPrefs = { ...currentPreferences, ...newPrefs };
-    styleEl.textContent = generateCSS(updatedPrefs, themes);
+    styleEl.textContent =
+      generateCSS(updatedPrefs, themes) +
+      controlStyles(themes[updatedPrefs.theme]);
     currentPreferences = updatedPrefs;
+
+    // Update active states on controls
+    if (newPrefs.theme) {
+      document.querySelectorAll(".theme-toggle button").forEach((button) => {
+        button.classList.toggle(
+          "active",
+          (button.innerHTML === "☀️" && newPrefs.theme === "light") ||
+            (button.innerHTML === "🌙" && newPrefs.theme === "dark")
+        );
+      });
+    }
+
+    if (newPrefs.fontSize) {
+      document.querySelectorAll(".font-size-button").forEach((button) => {
+        const size = sizes.find(
+          (s) => s.class === button.className.split(" ")[1]
+        )?.size;
+        if (size) {
+          button.classList.toggle("active", size === newPrefs.fontSize);
+        }
+      });
+    }
   }
 }
 
@@ -34,7 +99,9 @@ function updateStyles(newPrefs: Partial<StylePreferences>) {
 function injectStyles() {
   const style = document.createElement("style");
   style.id = "read-and-scroll-styles";
-  style.textContent = generateCSS(currentPreferences, themes);
+  style.textContent =
+    generateCSS(currentPreferences, themes) +
+    controlStyles(themes[currentPreferences.theme]);
   document.head.appendChild(style);
 }
 
@@ -54,6 +121,9 @@ function createReadableVersion() {
   // Set up the layout
   document.body.innerHTML = "";
   document.body.appendChild(container);
+
+  // Create and add controls
+  createControls();
 
   // Inject our styles after the container is in the DOM
   injectStyles();

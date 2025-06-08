@@ -1,4 +1,4 @@
-interface ThemeColors {
+export interface ThemeColors {
   background: string;
   color: string;
   shadow: string;
@@ -19,7 +19,7 @@ export const themes: Theme = {
     shadow: "rgba(0, 0, 0, 0.1)",
     linkColor: "#0366d6",
     headingColor: "#111",
-    borderColor: "#e1e4e8"
+    borderColor: "#e1e4e8",
   },
   dark: {
     background: "#222",
@@ -27,6 +27,6 @@ export const themes: Theme = {
     shadow: "rgba(0, 0, 0, 0.3)",
     linkColor: "#58a6ff",
     headingColor: "#fff",
-    borderColor: "#30363d"
-  }
+    borderColor: "#30363d",
+  },
 };
