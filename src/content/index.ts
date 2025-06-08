@@ -2,6 +2,11 @@ import * as readability from "@mozilla/readability";
 import { themes } from "./styles/theme";
 import { generateCSS } from "./styles/reader";
 import { controlStyles } from "./styles/controls";
+import {
+  calculateScrollSpeed,
+  startScrolling,
+  stopScrolling,
+} from "./autoScroll";
 import type { StylePreferences } from "./styles/reader";
 
 const defaultPreferences: StylePreferences = {
@@ -55,8 +60,46 @@ function createControls() {
     fontSizes.appendChild(button);
   });
 
+  // Add scroll speed control
+  const scrollControl = document.createElement("div");
+  scrollControl.className = "scroll-control";
+
+  const slider = document.createElement("input");
+  slider.type = "range";
+  slider.min = "0";
+  slider.max = "100";
+  slider.value = "0";
+  slider.className = "scroll-slider";
+
+  const speedLabel = document.createElement("div");
+  speedLabel.className = "speed-label";
+  speedLabel.textContent = "Scroll Speed: Stopped";
+
+  slider.addEventListener("input", (e) => {
+    const value = parseInt((e.target as HTMLInputElement).value);
+    const speed = calculateScrollSpeed(value);
+
+    if (value === 0) {
+      speedLabel.textContent = "Scroll Speed: Stopped";
+      speedLabel.className = "speed-label";
+      stopScrolling();
+    } else if (value === 100) {
+      speedLabel.textContent = "LUDICROUS SPEED!";
+      speedLabel.className = "speed-label ludicrous";
+      startScrolling(speed);
+    } else {
+      speedLabel.textContent = `Scroll Speed: ${value}%`;
+      speedLabel.className = "speed-label";
+      startScrolling(speed);
+    }
+  });
+
+  scrollControl.appendChild(slider);
+  scrollControl.appendChild(speedLabel);
+
   controls.appendChild(themeToggle);
   controls.appendChild(fontSizes);
+  controls.appendChild(scrollControl);
 
   document.body.appendChild(controls);
 }

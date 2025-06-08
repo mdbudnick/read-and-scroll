@@ -86,4 +86,36 @@ export const controlStyles = (theme: ThemeColors) => `
   #read-and-scroll-controls .font-size-button.large {
     font-size: 22px;
   }
+
+  #read-and-scroll-controls .scroll-control {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid ${theme.borderColor};
+  }
+
+  #read-and-scroll-controls .scroll-slider {
+    width: 100%;
+    margin: 0;
+  }
+
+  #read-and-scroll-controls .speed-label {
+    text-align: center;
+    font-size: 12px;
+    color: ${theme.color};
+    opacity: 0.8;
+  }
+
+  #read-and-scroll-controls .ludicrous {
+    color: ${theme.color};
+    font-weight: bold;
+    animation: blink 1s infinite;
+  }
+
+  @keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+  }
 `;
