@@ -31,7 +31,7 @@
         "icon-32.png",
         "icon-16.png"
       ],
-      "matches": []
+      "matches": ["<all_urls>"]
     }
   ]
 }
