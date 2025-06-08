@@ -3,9 +3,10 @@ import type { ThemeColors } from "./theme";
 export const controlStyles = (theme: ThemeColors) => `
   #read-and-scroll-controls {
     position: fixed;
-    left: 20px;
+    left: 40px;
     top: 50%;
     transform: translateY(-50%);
+    min-width: 200px;
     background-color: ${theme.background};
     border-radius: 12px;
     padding: 1rem;
