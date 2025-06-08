@@ -47,7 +47,7 @@ export const controlStyles = (theme: ThemeColors) => `
 
   #read-and-scroll-controls .font-sizes {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 0.5rem;
     align-items: center;
   }
