@@ -42,7 +42,7 @@ export function updateScrollSpeed(speed: number) {
 
 // Convert slider value (0-100) to actual scroll speed
 export function calculateScrollSpeed(sliderValue: number): number {
-  // Exponential increase in speed
-  // At 100%, speed will be 20 pixels per 50ms (ludicrous!)
-  return Math.pow(sliderValue / 100, 2) * 20;
+  // Exponential increase in speed, but half as fast as before
+  // At 100%, speed will be 5.5 pixels per 50ms (ludicrous!)
+  return sliderValue === 0 ? 0 : Math.pow(sliderValue / 100, 2) * 5 + 0.5;
 }
