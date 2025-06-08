@@ -10,9 +10,9 @@ const scrollState: ScrollState = {
 
 let scrollInterval: number | null = null;
 
-export function startScrolling(speed: number) {
+export function startScrolling(value: number) {
   scrollState.isScrolling = true;
-  scrollState.speed = speed;
+  scrollState.speed = calculateScrollSpeed(value);
 
   if (scrollInterval) {
     clearInterval(scrollInterval);

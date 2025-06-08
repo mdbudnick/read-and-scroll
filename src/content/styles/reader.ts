@@ -31,7 +31,7 @@ export interface ElementStyles {
 export interface StylePreferences {
   width: string;
   fontSize: string;
-  theme: "light" | "dark" | "rainbow";
+  theme: "light" | "dark" | "rainbow" | "starwars";
   imageSize: "normal" | "large" | "small";
   fontWeight: "normal" | "bold";
 }
@@ -183,9 +183,7 @@ export function generateCSS(prefs: StylePreferences, themes: Theme): string {
     html, body {
       margin: 0 !important;
       padding: 0 !important;
-      background-color: ${
-        prefs.theme === "dark" ? "#1a1a1a" : "#f0f0f0"
-      } !important;
+      background-color: ${theme.background} !important;
       min-height: 100vh !important;
     }
 
@@ -310,6 +308,39 @@ export function generateCSS(prefs: StylePreferences, themes: Theme): string {
     @keyframes rainbow-flow {
       0% { background-position: 0% 50%; }
       100% { background-position: 100% 50%; }
+    }
+
+    /* Star Wars theme styles */
+    .starwars-theme {
+      background: #000 !important;
+      color: #ffe81f !important;
+      overflow: hidden;
+      font-family: 'Pathway Gothic One', 'Arial Narrow', Arial, sans-serif !important;
+      font-weight: bold !important;
+      text-shadow: 0 0 8px #ffe81f, 0 0 16px #000;
+      width: 100%;
+      max-width: 700px;
+      margin: 0 auto;
+      font-size: 2.2rem;
+      line-height: 1.5;
+      letter-spacing: 1px;
+      padding-bottom: 10vh;
+      /* No transform, no animation */
+    }
+    .starwars-theme #read-and-scroll-container {
+      background: transparent !important;
+      max-width: 700px !important;
+      margin: 0 auto !important;
+      padding-top: 40px !important;
+      padding-bottom: 40px !important;
+      display: block !important;
+      height: auto !important;
+      overflow: hidden !important;
+    }
+    .starwars-theme h1, .starwars-theme h2, .starwars-theme h3, .starwars-theme h4, .starwars-theme p, .starwars-theme li {
+      color: #ffe81f !important;
+      text-shadow: 0 0 8px #ffe81f, 0 0 16px #000;
+      background: none !important;
     }
   `;
 }

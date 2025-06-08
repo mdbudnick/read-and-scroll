@@ -2,11 +2,7 @@ import * as readability from "@mozilla/readability";
 import { themes } from "./styles/theme";
 import { generateCSS } from "./styles/reader";
 import { controlStyles } from "./styles/controls";
-import {
-  calculateScrollSpeed,
-  startScrolling,
-  stopScrolling,
-} from "./autoScroll";
+import { startScrolling, stopScrolling } from "./autoScroll";
 import type { StylePreferences } from "./styles/reader";
 
 const defaultPreferences: StylePreferences = {
@@ -51,9 +47,18 @@ function createControls() {
     updateStyles({ theme: "rainbow" })
   );
 
+  const starWarsButton = document.createElement("button");
+  starWarsButton.innerHTML = "⭐";
+  starWarsButton.className =
+    currentPreferences.theme === "starwars" ? "active" : "";
+  starWarsButton.addEventListener("click", () =>
+    updateStyles({ theme: "starwars" })
+  );
+
   themeToggle.appendChild(lightButton);
   themeToggle.appendChild(darkButton);
   themeToggle.appendChild(rainbowButton);
+  themeToggle.appendChild(starWarsButton);
 
   // Font size controls
   const fontSizes = document.createElement("div");
@@ -86,7 +91,6 @@ function createControls() {
 
   slider.addEventListener("input", (e) => {
     const value = parseInt((e.target as HTMLInputElement).value);
-    const speed = calculateScrollSpeed(value);
 
     if (value === 0) {
       speedLabel.textContent = "Scroll Speed: Stopped";
@@ -95,11 +99,11 @@ function createControls() {
     } else if (value === 100) {
       speedLabel.textContent = "LUDICROUS SPEED!";
       speedLabel.className = "speed-label ludicrous";
-      startScrolling(speed);
+      startScrolling(value);
     } else {
       speedLabel.textContent = `Scroll Speed: ${value}%`;
       speedLabel.className = "speed-label";
-      startScrolling(speed);
+      startScrolling(value);
     }
   });
 
@@ -130,16 +134,32 @@ function updateStyles(newPrefs: Partial<StylePreferences>) {
           "active",
           (button.innerHTML === "☀️" && newPrefs.theme === "light") ||
             (button.innerHTML === "🌙" && newPrefs.theme === "dark") ||
-            (button.innerHTML === "🌈" && newPrefs.theme === "rainbow")
+            (button.innerHTML === "🌈" && newPrefs.theme === "rainbow") ||
+            (button.innerHTML === "⭐" && newPrefs.theme === "starwars")
         );
       });
-      // Add or remove rainbow-theme class on container
+      // Add or remove rainbow/starwars-theme class on container
       const container = document.getElementById("read-and-scroll-container");
       if (container) {
         if (newPrefs.theme === "rainbow") {
+          container.classList.remove("starwars-theme");
           container.classList.add("rainbow-theme");
+        } else if (newPrefs.theme === "starwars") {
+          container.classList.remove("rainbow-theme");
+          container.classList.add("starwars-theme");
+          const slider = document.querySelector(
+            ".scroll-slider"
+          ) as HTMLInputElement | null;
+          if (slider) {
+            slider.value = "25";
+            slider.dispatchEvent(new Event("input", { bubbles: true }));
+          }
         } else {
           container.classList.remove("rainbow-theme");
+          container.classList.remove("starwars-theme");
+          document.body.classList.remove("starwars");
+          document.body.classList.remove("rainbow");
+          stopScrolling();
         }
       }
     }

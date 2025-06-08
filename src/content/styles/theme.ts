@@ -11,6 +11,7 @@ export interface Theme {
   light: ThemeColors;
   dark: ThemeColors;
   rainbow: ThemeColors;
+  starwars: ThemeColors;
 }
 
 export const themes: Theme = {
@@ -37,5 +38,13 @@ export const themes: Theme = {
     linkColor: "#0366d6",
     headingColor: "#111",
     borderColor: "#e1e4e8",
+  },
+  starwars: {
+    background: "#000",
+    color: "#ffe81f",
+    shadow: "rgba(0,0,0,1)",
+    linkColor: "#ffe81f",
+    headingColor: "#ffe81f",
+    borderColor: "#000",
   },
 };
