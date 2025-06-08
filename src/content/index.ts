@@ -57,8 +57,8 @@ function createControls() {
 
   themeToggle.appendChild(lightButton);
   themeToggle.appendChild(darkButton);
-  themeToggle.appendChild(rainbowButton);
   themeToggle.appendChild(starWarsButton);
+  themeToggle.appendChild(rainbowButton);
 
   // Font size controls
   const fontSizes = document.createElement("div");
