@@ -20,6 +20,31 @@ export function startScrolling(speed: number) {
 
   scrollInterval = setInterval(() => {
     if (scrollState.isScrolling) {
+      // Check if we're at the bottom of the page
+      const scrollY = window.scrollY || window.pageYOffset;
+      const viewportHeight = window.innerHeight;
+      const docHeight = Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight,
+        document.body.offsetHeight,
+        document.documentElement.offsetHeight,
+        document.body.clientHeight,
+        document.documentElement.clientHeight
+      );
+      if (scrollY + viewportHeight >= docHeight - 2) {
+        stopScrolling();
+        // Reset slider value to 0 if present
+        const slider = document.querySelector(
+          ".scroll-slider"
+        ) as HTMLInputElement | null;
+        if (slider) slider.value = "0";
+        const speedLabel = document.querySelector(".speed-label");
+        if (speedLabel) {
+          speedLabel.textContent = "Scroll Speed: Stopped";
+          speedLabel.className = "speed-label";
+        }
+        return;
+      }
       window.scrollBy(0, scrollState.speed);
     }
   }, 50) as unknown as number;
