@@ -106,7 +106,10 @@ function injectStyles() {
 }
 
 function createReadableVersion() {
-  // Create the container for our readable content
+  // Create the wrapper and container
+  const wrapper = document.createElement("div");
+  wrapper.id = "read-and-scroll-wrapper";
+
   const container = document.createElement("div");
   container.id = "read-and-scroll-container";
 
@@ -120,7 +123,8 @@ function createReadableVersion() {
 
   // Set up the layout
   document.body.innerHTML = "";
-  document.body.appendChild(container);
+  wrapper.appendChild(container);
+  document.body.appendChild(wrapper);
 
   // Create and add controls
   createControls();

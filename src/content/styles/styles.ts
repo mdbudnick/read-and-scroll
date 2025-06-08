@@ -1,5 +1,4 @@
-import type { Theme } from "./theme";
-import type { ThemeColors } from "./theme";
+import type { Theme, ThemeColors } from "./theme";
 
 export interface ElementStyles {
   container: string;
@@ -28,7 +27,7 @@ export interface ElementStyles {
   };
 }
 
-export interface StylePreferences {
+interface StylePreferences {
   width: string;
   fontSize: string;
   theme: "light" | "dark";
@@ -175,38 +174,8 @@ export function generateCSS(prefs: StylePreferences, themes: Theme): string {
   const styles = generateElementStyles(prefs, theme);
 
   return `
-    /* Global theme styles */
-    :root {
-      color-scheme: ${prefs.theme === "dark" ? "dark" : "light"};
-    }
-    
-    html, body {
-      margin: 0 !important;
-      padding: 0 !important;
-      background-color: ${
-        prefs.theme === "dark" ? "#1a1a1a" : "#f0f0f0"
-      } !important;
-      min-height: 100vh !important;
-    }
-
-    body {
-      color: ${theme.color} !important;
-      display: flex !important;
-      flex-direction: column !important;
-    }
-
-    #read-and-scroll-wrapper {
-      flex: 1 !important;
-      display: flex !important;
-      justify-content: center !important;
-      padding: 2rem !important;
-      min-height: 100vh !important;
-      box-sizing: border-box !important;
-    }
-    
     #read-and-scroll-container {
       ${styles.container}
-      max-width: 1200px !important;
     }
     
     #read-and-scroll-container h1 {
