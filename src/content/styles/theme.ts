@@ -10,6 +10,7 @@ export interface ThemeColors {
 export interface Theme {
   light: ThemeColors;
   dark: ThemeColors;
+  rainbow: ThemeColors;
 }
 
 export const themes: Theme = {
@@ -28,5 +29,13 @@ export const themes: Theme = {
     linkColor: "#58a6ff",
     headingColor: "#fff",
     borderColor: "#30363d",
+  },
+  rainbow: {
+    background: "white",
+    color: "#333",
+    shadow: "rgba(0, 0, 0, 0.1)",
+    linkColor: "#0366d6",
+    headingColor: "#111",
+    borderColor: "#e1e4e8",
   },
 };

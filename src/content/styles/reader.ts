@@ -31,7 +31,7 @@ export interface ElementStyles {
 export interface StylePreferences {
   width: string;
   fontSize: string;
-  theme: "light" | "dark";
+  theme: "light" | "dark" | "rainbow";
   imageSize: "normal" | "large" | "small";
   fontWeight: "normal" | "bold";
 }
@@ -267,6 +267,49 @@ export function generateCSS(prefs: StylePreferences, themes: Theme): string {
     
     #read-and-scroll-container li {
       ${styles.lists.listItem}
+    }
+
+    /* Rainbow theme styles */
+    .rainbow-theme {
+      background: white !important;
+      color: #222 !important;
+    }
+    .rainbow-theme p,
+    .rainbow-theme li,
+    .rainbow-theme h1,
+    .rainbow-theme h2,
+    .rainbow-theme h3,
+    .rainbow-theme h4 {
+      /* Each line gets a different color using nth-child */
+      animation: rainbow-flow 5s linear infinite;
+      background: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet, red, orange, yellow, green, blue);
+      background-size: 400% 100%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-fill-color: transparent;
+    }
+    .rainbow-theme p:nth-child(7n+1),
+    .rainbow-theme li:nth-child(7n+1),
+    .rainbow-theme h1:nth-child(7n+1) { background-position: 0% 50%; }
+    .rainbow-theme p:nth-child(7n+2),
+    .rainbow-theme li:nth-child(7n+2),
+    .rainbow-theme h2:nth-child(7n+2) { background-position: 14% 50%; }
+    .rainbow-theme p:nth-child(7n+3),
+    .rainbow-theme li:nth-child(7n+3),
+    .rainbow-theme h3:nth-child(7n+3) { background-position: 28% 50%; }
+    .rainbow-theme p:nth-child(7n+4),
+    .rainbow-theme li:nth-child(7n+4),
+    .rainbow-theme h4:nth-child(7n+4) { background-position: 42% 50%; }
+    .rainbow-theme p:nth-child(7n+5),
+    .rainbow-theme li:nth-child(7n+5) { background-position: 57% 50%; }
+    .rainbow-theme p:nth-child(7n+6),
+    .rainbow-theme li:nth-child(7n+6) { background-position: 71% 50%; }
+    .rainbow-theme p:nth-child(7n+7),
+    .rainbow-theme li:nth-child(7n+7) { background-position: 85% 50%; }
+    @keyframes rainbow-flow {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 100% 50%; }
     }
   `;
 }

@@ -43,8 +43,17 @@ function createControls() {
   darkButton.className = currentPreferences.theme === "dark" ? "active" : "";
   darkButton.addEventListener("click", () => updateStyles({ theme: "dark" }));
 
+  const rainbowButton = document.createElement("button");
+  rainbowButton.innerHTML = "🌈";
+  rainbowButton.className =
+    currentPreferences.theme === "rainbow" ? "active" : "";
+  rainbowButton.addEventListener("click", () =>
+    updateStyles({ theme: "rainbow" })
+  );
+
   themeToggle.appendChild(lightButton);
   themeToggle.appendChild(darkButton);
+  themeToggle.appendChild(rainbowButton);
 
   // Font size controls
   const fontSizes = document.createElement("div");
@@ -120,9 +129,19 @@ function updateStyles(newPrefs: Partial<StylePreferences>) {
         button.classList.toggle(
           "active",
           (button.innerHTML === "☀️" && newPrefs.theme === "light") ||
-            (button.innerHTML === "🌙" && newPrefs.theme === "dark")
+            (button.innerHTML === "🌙" && newPrefs.theme === "dark") ||
+            (button.innerHTML === "🌈" && newPrefs.theme === "rainbow")
         );
       });
+      // Add or remove rainbow-theme class on container
+      const container = document.getElementById("read-and-scroll-container");
+      if (container) {
+        if (newPrefs.theme === "rainbow") {
+          container.classList.add("rainbow-theme");
+        } else {
+          container.classList.remove("rainbow-theme");
+        }
+      }
     }
 
     if (newPrefs.fontSize) {
