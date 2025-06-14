@@ -10,9 +10,10 @@ const scrollState: ScrollState = {
 
 let scrollInterval: number | null = null;
 
-export function startScrolling(value: number) {
+export function startScrolling(value: number, labelText?: string) {
   scrollState.isScrolling = true;
   scrollState.speed = calculateScrollSpeed(value);
+  const speedLabel = document.querySelector(".speed-label");
 
   if (scrollInterval) {
     clearInterval(scrollInterval);
@@ -38,14 +39,18 @@ export function startScrolling(value: number) {
           ".scroll-slider"
         ) as HTMLInputElement | null;
         if (slider) slider.value = "0";
-        const speedLabel = document.querySelector(".speed-label");
         if (speedLabel) {
-          speedLabel.textContent = "Scroll Speed: Stopped";
+          speedLabel.textContent = "Stopped";
           speedLabel.className = "speed-label";
         }
         return;
       }
       window.scrollBy(0, scrollState.speed);
+      if (labelText) {
+        if (speedLabel) {
+          speedLabel.textContent = `${labelText}`;
+        }
+      }
     }
   }, 50) as unknown as number;
 }
@@ -55,6 +60,11 @@ export function stopScrolling() {
   if (scrollInterval) {
     clearInterval(scrollInterval);
     scrollInterval = null;
+  }
+  const speedLabel = document.querySelector(".speed-label");
+  if (speedLabel) {
+    speedLabel.textContent = "Stopped";
+    speedLabel.className = "speed-label";
   }
 }
 

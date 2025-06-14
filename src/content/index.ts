@@ -87,23 +87,29 @@ function createControls() {
 
   const speedLabel = document.createElement("div");
   speedLabel.className = "speed-label";
-  speedLabel.textContent = "Scroll Speed: Stopped";
+  speedLabel.textContent = "Stopped";
 
   slider.addEventListener("input", (e) => {
-    const value = parseInt((e.target as HTMLInputElement).value);
+    const sliderElement = e.target as HTMLInputElement;
+
+    // Check for starwars theme via data attribute
+    if (sliderElement.getAttribute("data-theme") === "starwars") {
+      sliderElement.value = "25";
+      sliderElement.removeAttribute("data-theme");
+      startScrolling(25, "May the Force be with you!");
+      return;
+    }
+
+    const value = parseInt(sliderElement.value);
 
     if (value === 0) {
-      speedLabel.textContent = "Scroll Speed: Stopped";
-      speedLabel.className = "speed-label";
       stopScrolling();
     } else if (value === 100) {
-      speedLabel.textContent = "LUDICROUS SPEED!";
+      startScrolling(value, "LUDICROUS SPEED!");
       speedLabel.className = "speed-label ludicrous";
-      startScrolling(value);
     } else {
-      speedLabel.textContent = `Scroll Speed: ${value}%`;
+      startScrolling(value, `${value}%`);
       speedLabel.className = "speed-label";
-      startScrolling(value);
     }
   });
 
@@ -147,13 +153,12 @@ function updateStyles(newPrefs: Partial<StylePreferences>) {
         } else if (newPrefs.theme === "starwars") {
           container.classList.remove("rainbow-theme");
           container.classList.add("starwars-theme");
-          const slider = document.querySelector(
-            ".scroll-slider"
-          ) as HTMLInputElement | null;
-          if (slider) {
-            slider.value = "25";
-            slider.dispatchEvent(new Event("input", { bubbles: true }));
-          }
+          const slider = document.getElementsByClassName(
+            "scroll-slider"
+          )[0] as HTMLInputElement;
+          slider.setAttribute("data-theme", "starwars");
+          slider.value = "25";
+          slider.dispatchEvent(new Event("input", { bubbles: true }));
         } else {
           container.classList.remove("rainbow-theme");
           container.classList.remove("starwars-theme");
