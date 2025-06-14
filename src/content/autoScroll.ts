@@ -1,13 +1,15 @@
 export interface ScrollState {
   isScrolling: boolean;
   speed: number;
-  label: string; // Added label to track the current speed label
+  value: string;
+  label: string;
 }
 
 const scrollState: ScrollState = {
   isScrolling: false,
   speed: 0,
-  label: "Stopped", // Default label when not scrolling
+  value: "0",
+  label: "Stopped",
 };
 
 let scrollInterval: number | null = null;
@@ -18,6 +20,7 @@ export function startScrolling(value: number, labelText?: string) {
   ) as HTMLInputElement | null;
   if (slider) {
     slider.value = value.toString();
+    scrollState.value = slider.value;
     scrollState.isScrolling = true;
     scrollState.speed = calculateScrollSpeed(value);
     startInterval(value);
@@ -64,16 +67,26 @@ export function startInterval(value: number) {
   }, 50) as unknown as number;
 }
 
-let prevScrollSpeed = 0;
+let prevScrollValue = "0";
 let prevScrollLabel = "";
 let wasLudicrous = false;
 let isClickStopped = false;
 let isPaused = false;
 export function stopScrolling(type?: "pause" | "stop" | undefined) {
-  scrollState.isScrolling = false;
   if (scrollInterval) {
     clearInterval(scrollInterval);
     scrollInterval = null;
+
+    scrollState.isScrolling = false;
+    prevScrollValue = scrollState.value;
+    scrollState.speed = 0;
+    scrollState.value = "0";
+    prevScrollLabel = scrollState.label; // Reupdated below
+    wasLudicrous =
+      document.querySelector(".speed-label")?.classList.contains("ludicrous") ??
+      false;
+    isClickStopped = type === "stop";
+    isPaused = type === "pause";
   }
 
   const slider = document.querySelector(
@@ -91,12 +104,13 @@ export function stopScrolling(type?: "pause" | "stop" | undefined) {
         : "Stopped";
     speedLabel.textContent = text;
     speedLabel.className = "speed-label";
+    scrollState.label = text; // Update the label in scrollState
   }
 }
 
 export function doPauseStopOrResume(type: "pause" | "stop") {
   if (scrollState.isScrolling) {
-    prevScrollSpeed = scrollState.speed;
+    prevScrollValue = scrollState.value;
     prevScrollLabel = scrollState.label;
     wasLudicrous =
       document.querySelector(".speed-label")?.classList.contains("ludicrous") ??
@@ -114,10 +128,10 @@ export function doPauseStopOrResume(type: "pause" | "stop") {
 }
 function resumeScrolling() {
   console.log("scrollstate.isScrolling", scrollState.isScrolling);
-  console.log("prevScrollSpeed", prevScrollSpeed);
-  if (!scrollState.isScrolling && prevScrollSpeed > 0) {
+  console.log("prevScrollSpeed", prevScrollValue);
+  const prevValue = parseInt(prevScrollValue);
+  if (!scrollState.isScrolling && prevValue > 0) {
     scrollState.isScrolling = true;
-    scrollState.speed = prevScrollSpeed;
     const speedLabel = document.querySelector(".speed-label");
     const labelText = prevScrollLabel || `${scrollState.speed}%`;
     if (speedLabel) {
@@ -127,7 +141,7 @@ function resumeScrolling() {
         speedLabel.className = "speed-label";
       }
     }
-    startScrolling(scrollState.speed, labelText);
+    startScrolling(prevValue, labelText);
     const slider = document.querySelector(
       ".scroll-slider"
     ) as HTMLInputElement | null;
