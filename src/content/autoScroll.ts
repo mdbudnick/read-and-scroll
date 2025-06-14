@@ -118,6 +118,11 @@ export function doPauseStopOrResume(type: "pause" | "stop") {
     isClickStopped = type === "stop";
     isPaused = type === "pause";
     stopScrolling(type);
+  } else if (isPaused && type === "stop") {
+    console.log("Stopping scrolling");
+    isPaused = false;
+    isClickStopped = true;
+    stopScrolling(type);
   } else if (
     (isPaused && type === "pause") ||
     (isClickStopped && type === "stop")
