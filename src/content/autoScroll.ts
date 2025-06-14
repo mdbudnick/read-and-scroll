@@ -75,6 +75,40 @@ export function updateScrollSpeed(speed: number) {
   }
 }
 
+let prevScrollSpeed = 0;
+let prevScrollLabel = "";
+let wasLudicrous = false;
+export function pauseScrolling() {
+  if (scrollState.isScrolling) {
+    prevScrollSpeed = scrollState.speed;
+    const scrollLabel = document.querySelector(".speed-label");
+    if (scrollLabel) {
+      prevScrollLabel = scrollLabel.textContent || "";
+      scrollLabel.textContent = "Paused";
+      wasLudicrous = scrollLabel.classList.contains("ludicrous");
+      scrollLabel.className = "speed-label paused";
+    }
+    stopScrolling();
+  }
+}
+
+export function resumeScrolling() {
+  if (!scrollState.isScrolling && prevScrollSpeed > 0) {
+    scrollState.isScrolling = true;
+    scrollState.speed = prevScrollSpeed;
+    const speedLabel = document.querySelector(".speed-label");
+    if (speedLabel) {
+      speedLabel.textContent = prevScrollLabel || `${scrollState.speed}%`;
+      if (wasLudicrous) {
+        speedLabel.className = "speed-label ludicrous";
+      } else {
+        speedLabel.className = "speed-label";
+      }
+    }
+    startScrolling(scrollState.speed, `${scrollState.speed}%`);
+  }
+}
+
 // Convert slider value (0-100) to actual scroll speed
 export function calculateScrollSpeed(sliderValue: number): number {
   // Exponential increase in speed, but half as fast as before
