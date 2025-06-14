@@ -9,7 +9,7 @@ const scrollState: ScrollState = {
   isScrolling: false,
   speed: 0,
   value: "0",
-  label: "Stopped",
+  label: "0%",
 };
 
 let scrollInterval: number | null = null;
@@ -56,12 +56,9 @@ export function startInterval(value: number) {
         document.documentElement.clientHeight
       );
       if (scrollY + viewportHeight >= docHeight - 2) {
-        stopScrolling();
+        stopScrolling("endofpage");
         return;
       }
-      console.log(
-        `Scrolling at speed: ${scrollState.speed} (${scrollState.label})`
-      );
       window.scrollBy(0, scrollState.speed);
     }
   }, 50) as unknown as number;
@@ -72,7 +69,7 @@ let prevScrollLabel = "";
 let wasLudicrous = false;
 let isClickStopped = false;
 let isPaused = false;
-export function stopScrolling(type?: "pause" | "stop" | undefined) {
+export function stopScrolling(type?: "pause" | "stop" | "endofpage") {
   if (scrollInterval) {
     clearInterval(scrollInterval);
     scrollInterval = null;
@@ -101,7 +98,9 @@ export function stopScrolling(type?: "pause" | "stop" | undefined) {
         ? "Hover Paused"
         : type === "stop"
         ? "Stopped (Click)"
-        : "Stopped";
+        : type === "endofpage"
+        ? "0% (End of Page)"
+        : "0%";
     speedLabel.textContent = text;
     speedLabel.className = "speed-label";
     scrollState.label = text; // Update the label in scrollState
@@ -141,8 +140,6 @@ export function doPauseStopOrResume(type: "pause" | "stop") {
   }
 }
 function resumeScrolling() {
-  console.log("scrollstate.isScrolling", scrollState.isScrolling);
-  console.log("prevScrollSpeed", prevScrollValue);
   const prevValue = parseInt(prevScrollValue);
   if (!scrollState.isScrolling && prevValue > 0) {
     scrollState.isScrolling = true;
@@ -160,7 +157,6 @@ function resumeScrolling() {
       ".scroll-slider"
     ) as HTMLInputElement | null;
     if (slider) {
-      console.log("dispatching event");
       slider.dispatchEvent(new Event("input", { bubbles: true }));
     }
   }

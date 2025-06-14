@@ -32,7 +32,7 @@ export const themes: Theme = {
     borderColor: "#30363d",
   },
   rainbow: {
-    background: "white",
+    background: "#d0e7ff", // pastel blue
     color: "#333",
     shadow: "rgba(0, 0, 0, 0.1)",
     linkColor: "#0366d6",
