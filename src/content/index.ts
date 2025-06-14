@@ -25,6 +25,39 @@ const sizes = [
 
 let currentPreferences = { ...defaultPreferences };
 
+// --- Reader Mode State ---
+let readerEnabled = false;
+let originalBodyHTML: string | null = null;
+let originalScroll: number = 0;
+
+function enableReader() {
+  if (!readerEnabled) {
+    // Save original content and scroll position
+    originalBodyHTML = document.body.innerHTML;
+    originalScroll = window.scrollY;
+    createReadableVersion();
+    readerEnabled = true;
+  }
+}
+
+function disableReader() {
+  if (readerEnabled) {
+    stopScrolling();
+    // Restore original DOM and scroll position
+    if (originalBodyHTML !== null) {
+      document.body.innerHTML = originalBodyHTML;
+      window.scrollTo(0, originalScroll);
+    } else {
+      // If we don't have the original HTML, reload the page
+      window.location.reload();
+    }
+    // Remove any leftover styles
+    const style = document.getElementById("read-and-scroll-styles");
+    if (style) style.remove();
+    readerEnabled = false;
+  }
+}
+
 function createControls() {
   const controls = document.createElement("div");
   controls.id = "read-and-scroll-controls";
@@ -253,19 +286,24 @@ function createReadableVersion() {
     }
     isDragging = false;
   });
-
-  // Listen for messages from popup/background script to update styles
-  chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-    if (message.type === "UPDATE_STYLES") {
-      updateStyles(message.preferences);
-      sendResponse({ success: true });
-    }
-  });
 }
+
+// Listen for messages from popup/background script
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (message.type === "ENABLE_READER") {
+    enableReader();
+    sendResponse({ enabled: true });
+  } else if (message.type === "DISABLE_READER") {
+    disableReader();
+    sendResponse({ enabled: false });
+  } else if (message.type === "GET_STATE") {
+    sendResponse({ enabled: readerEnabled });
+  } else if (message.type === "UPDATE_STYLES") {
+    updateStyles(message.preferences);
+    sendResponse({ success: true });
+  }
+});
 
 // Export for use in other parts of the extension
 export { updateStyles };
 export type { StylePreferences };
-
-// Start the process
-createReadableVersion();

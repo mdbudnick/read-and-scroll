@@ -36,19 +36,32 @@
   }
 })();
 
-import * as React from "react";
-import { createRoot } from "react-dom/client";
+document.addEventListener("DOMContentLoaded", () => {
+  const toggle = document.getElementById("enable-toggle") as HTMLInputElement;
+  if (!toggle) return;
 
-const Popup: React.FC = () => {
-  return React.createElement(
-    "div",
-    { style: { padding: 16 } },
-    "Read and Scroll Popup"
-  );
-};
+  // Restore the enabled/disabled state
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const tab = tabs[0];
+    if (!tab || !tab.id) return;
+    const tabId = tab.id;
+    chrome.tabs.sendMessage(tabId, { type: "GET_STATE" }, (response) => {
+      toggle.checked = response?.enabled || false;
+    });
+  });
 
-const container = document.getElementById("root");
-if (container) {
-  const root = createRoot(container);
-  root.render(React.createElement(Popup));
-}
+  toggle.addEventListener("change", () => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const tab = tabs[0];
+      if (!tab || !tab.id) return;
+      const tabId = tab.id;
+      if (toggle.checked) {
+        // Enable: send message to content script to enable reader
+        chrome.tabs.sendMessage(tabId, { type: "ENABLE_READER" });
+      } else {
+        // Disable: send message to content script to disable reader
+        chrome.tabs.sendMessage(tabId, { type: "DISABLE_READER" });
+      }
+    });
+  });
+});
