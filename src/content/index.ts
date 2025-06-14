@@ -169,7 +169,6 @@ function updateStyles(newPrefs: Partial<StylePreferences>) {
           container.classList.remove("starwars-theme");
           document.body.classList.remove("starwars");
           document.body.classList.remove("rainbow");
-          stopScrolling();
         }
       }
     }
