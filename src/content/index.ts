@@ -97,14 +97,6 @@ function createControls() {
   slider.addEventListener("input", (e) => {
     const sliderElement = e.target as HTMLInputElement;
 
-    // Check for starwars theme via data attribute
-    if (sliderElement.getAttribute("data-theme") === "starwars") {
-      sliderElement.value = "25";
-      sliderElement.removeAttribute("data-theme");
-      startScrolling(25, "May the Force be with you!");
-      return;
-    }
-
     const value = parseInt(sliderElement.value);
 
     if (value === 0) {
@@ -161,7 +153,6 @@ function updateStyles(newPrefs: Partial<StylePreferences>) {
           const slider = document.getElementsByClassName(
             "scroll-slider"
           )[0] as HTMLInputElement;
-          slider.setAttribute("data-theme", "starwars");
           slider.value = "25";
           slider.dispatchEvent(new Event("input", { bubbles: true }));
         } else {
