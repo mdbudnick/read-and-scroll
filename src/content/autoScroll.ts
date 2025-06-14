@@ -55,7 +55,7 @@ export function startScrolling(value: number, labelText?: string) {
   }, 50) as unknown as number;
 }
 
-export function stopScrolling() {
+export function stopScrolling(paused?: boolean) {
   scrollState.isScrolling = false;
   if (scrollInterval) {
     clearInterval(scrollInterval);
@@ -63,7 +63,7 @@ export function stopScrolling() {
   }
   const speedLabel = document.querySelector(".speed-label");
   if (speedLabel) {
-    speedLabel.textContent = "Stopped";
+    speedLabel.textContent = paused ? "Hover Pause" : "Stopped";
     speedLabel.className = "speed-label";
   }
 }
@@ -88,7 +88,7 @@ export function pauseScrolling() {
       wasLudicrous = scrollLabel.classList.contains("ludicrous");
       scrollLabel.className = "speed-label paused";
     }
-    stopScrolling();
+    stopScrolling(true);
   }
 }
 
@@ -97,15 +97,15 @@ export function resumeScrolling() {
     scrollState.isScrolling = true;
     scrollState.speed = prevScrollSpeed;
     const speedLabel = document.querySelector(".speed-label");
+    const labelText = prevScrollLabel || `${scrollState.speed}%`;
     if (speedLabel) {
-      speedLabel.textContent = prevScrollLabel || `${scrollState.speed}%`;
       if (wasLudicrous) {
         speedLabel.className = "speed-label ludicrous";
       } else {
         speedLabel.className = "speed-label";
       }
     }
-    startScrolling(scrollState.speed, `${scrollState.speed}%`);
+    startScrolling(scrollState.speed, labelText);
   }
 }
 

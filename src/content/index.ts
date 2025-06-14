@@ -2,7 +2,12 @@ import * as readability from "@mozilla/readability";
 import { themes } from "./styles/theme";
 import { generateCSS } from "./styles/reader";
 import { controlStyles } from "./styles/controls";
-import { startScrolling, stopScrolling } from "./autoScroll";
+import {
+  startScrolling,
+  stopScrolling,
+  pauseScrolling,
+  resumeScrolling,
+} from "./autoScroll";
 import type { StylePreferences } from "./styles/reader";
 
 const defaultPreferences: StylePreferences = {
@@ -227,6 +232,14 @@ function createReadableVersion() {
     container.innerHTML =
       "<p>Could not extract readable content from this page.</p>";
   }
+
+  // Pause scrolling on hover, resume on mouse leave
+  container.addEventListener("mouseenter", () => {
+    pauseScrolling();
+  });
+  container.addEventListener("mouseleave", () => {
+    resumeScrolling();
+  });
 
   // Listen for messages from popup/background script to update styles
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
