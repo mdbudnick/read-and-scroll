@@ -1,7 +1,7 @@
 export interface ScrollState {
   isScrolling: boolean;
-  speed: number;
-  value: string;
+  speed: number; // This is scroll speed
+  value: string; // This is slider value
   label: string;
 }
 
