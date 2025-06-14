@@ -237,6 +237,16 @@ function createReadableVersion() {
   });
   container.addEventListener("mouseup", () => {
     const clickDuration = Date.now() - mouseDownTime;
+    // Prevent toggle if user is clearing a text selection
+    const selection = window.getSelection();
+    if (
+      selection &&
+      selection.type === "Range" &&
+      selection.toString().length > 0
+    ) {
+      isDragging = false;
+      return;
+    }
     // Only toggle if not a drag and click is quick (<250ms)
     if (!isDragging && clickDuration < 250) {
       doPauseStopOrResume("stop");
