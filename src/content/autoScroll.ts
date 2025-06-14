@@ -119,7 +119,6 @@ export function doPauseStopOrResume(type: "pause" | "stop") {
     isPaused = type === "pause";
     stopScrolling(type);
   } else if (isPaused && type === "stop") {
-    console.log("Stopping scrolling");
     isPaused = false;
     isClickStopped = true;
     stopScrolling(type);
@@ -127,8 +126,18 @@ export function doPauseStopOrResume(type: "pause" | "stop") {
     (isPaused && type === "pause") ||
     (isClickStopped && type === "stop")
   ) {
-    console.log("Resuming scrolling");
-    resumeScrolling();
+    if (isClickStopped && type === "stop") {
+      isClickStopped = false;
+      // There's actually a bug here, because we click to resume
+      // and the mouse is ALREADY hovering, so we dispatch a pause hover event
+      // To trigger a pause again. Or else it becomes inverted.
+      isPaused = true;
+      stopScrolling("pause");
+    } else {
+      isPaused = false;
+      isClickStopped = false;
+      resumeScrolling();
+    }
   }
 }
 function resumeScrolling() {
