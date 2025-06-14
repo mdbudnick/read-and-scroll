@@ -3,10 +3,9 @@ import { themes } from "./styles/theme";
 import { generateCSS } from "./styles/reader";
 import { controlStyles } from "./styles/controls";
 import {
+  doPauseStopOrResume,
   startScrolling,
   stopScrolling,
-  pauseScrolling,
-  resumeScrolling,
 } from "./autoScroll";
 import type { StylePreferences } from "./styles/reader";
 
@@ -96,7 +95,6 @@ function createControls() {
 
   slider.addEventListener("input", (e) => {
     const sliderElement = e.target as HTMLInputElement;
-
     const value = parseInt(sliderElement.value);
 
     if (value === 0) {
@@ -150,11 +148,7 @@ function updateStyles(newPrefs: Partial<StylePreferences>) {
         } else if (newPrefs.theme === "starwars") {
           container.classList.remove("rainbow-theme");
           container.classList.add("starwars-theme");
-          const slider = document.getElementsByClassName(
-            "scroll-slider"
-          )[0] as HTMLInputElement;
-          slider.value = "25";
-          slider.dispatchEvent(new Event("input", { bubbles: true }));
+          startScrolling(25); // Set a default speed for Star Wars theme
         } else {
           container.classList.remove("rainbow-theme");
           container.classList.remove("starwars-theme");
@@ -225,10 +219,29 @@ function createReadableVersion() {
 
   // Pause scrolling on hover, resume on mouse leave
   container.addEventListener("mouseenter", () => {
-    pauseScrolling();
+    doPauseStopOrResume("pause");
   });
   container.addEventListener("mouseleave", () => {
-    resumeScrolling();
+    doPauseStopOrResume("pause"); // This will call resume if already paused
+  });
+
+  // Toggle scrolling on fast click (not drag)
+  let mouseDownTime = 0;
+  let isDragging = false;
+  container.addEventListener("mousedown", () => {
+    mouseDownTime = Date.now();
+    isDragging = false;
+  });
+  container.addEventListener("mousemove", () => {
+    isDragging = true;
+  });
+  container.addEventListener("mouseup", () => {
+    const clickDuration = Date.now() - mouseDownTime;
+    // Only toggle if not a drag and click is quick (<250ms)
+    if (!isDragging && clickDuration < 250) {
+      doPauseStopOrResume("stop");
+    }
+    isDragging = false;
   });
 
   // Listen for messages from popup/background script to update styles

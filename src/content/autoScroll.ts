@@ -1,27 +1,47 @@
 export interface ScrollState {
   isScrolling: boolean;
   speed: number;
+  label: string; // Added label to track the current speed label
 }
 
 const scrollState: ScrollState = {
   isScrolling: false,
   speed: 0,
+  label: "Stopped", // Default label when not scrolling
 };
 
 let scrollInterval: number | null = null;
 
 export function startScrolling(value: number, labelText?: string) {
+  const slider = document.querySelector(
+    ".scroll-slider"
+  ) as HTMLInputElement | null;
+  if (slider) {
+    slider.value = value.toString();
+    scrollState.isScrolling = true;
+    scrollState.speed = calculateScrollSpeed(value);
+    startInterval(value);
+    // Set label before dispatching event so the event handler can use it
+    if (labelText) {
+      const speedLabel = document.querySelector(".speed-label");
+      if (speedLabel) {
+        speedLabel.textContent = labelText;
+        scrollState.label = labelText;
+      }
+    }
+    slider.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+}
+
+// Only handles the interval logic now
+export function startInterval(value: number) {
   scrollState.isScrolling = true;
   scrollState.speed = calculateScrollSpeed(value);
-  const speedLabel = document.querySelector(".speed-label");
-
   if (scrollInterval) {
     clearInterval(scrollInterval);
   }
-
   scrollInterval = setInterval(() => {
     if (scrollState.isScrolling) {
-      // Check if we're at the bottom of the page
       const scrollY = window.scrollY || window.pageYOffset;
       const viewportHeight = window.innerHeight;
       const docHeight = Math.max(
@@ -34,65 +54,67 @@ export function startScrolling(value: number, labelText?: string) {
       );
       if (scrollY + viewportHeight >= docHeight - 2) {
         stopScrolling();
-        // Reset slider value to 0 if present
-        const slider = document.querySelector(
-          ".scroll-slider"
-        ) as HTMLInputElement | null;
-        if (slider) slider.value = "0";
-        if (speedLabel) {
-          speedLabel.textContent = "Stopped";
-          speedLabel.className = "speed-label";
-        }
         return;
       }
+      console.log(
+        `Scrolling at speed: ${scrollState.speed} (${scrollState.label})`
+      );
       window.scrollBy(0, scrollState.speed);
-      if (labelText) {
-        if (speedLabel) {
-          speedLabel.textContent = `${labelText}`;
-        }
-      }
     }
   }, 50) as unknown as number;
-}
-
-export function stopScrolling(paused?: boolean) {
-  scrollState.isScrolling = false;
-  if (scrollInterval) {
-    clearInterval(scrollInterval);
-    scrollInterval = null;
-  }
-  const speedLabel = document.querySelector(".speed-label");
-  if (speedLabel) {
-    speedLabel.textContent = paused ? "Hover Pause" : "Stopped";
-    speedLabel.className = "speed-label";
-  }
-}
-
-export function updateScrollSpeed(speed: number) {
-  scrollState.speed = speed;
-  if (scrollState.isScrolling) {
-    startScrolling(speed); // Restart with new speed
-  }
 }
 
 let prevScrollSpeed = 0;
 let prevScrollLabel = "";
 let wasLudicrous = false;
-export function pauseScrolling() {
-  if (scrollState.isScrolling) {
-    prevScrollSpeed = scrollState.speed;
-    const scrollLabel = document.querySelector(".speed-label");
-    if (scrollLabel) {
-      prevScrollLabel = scrollLabel.textContent || "";
-      scrollLabel.textContent = "Paused";
-      wasLudicrous = scrollLabel.classList.contains("ludicrous");
-      scrollLabel.className = "speed-label paused";
-    }
-    stopScrolling(true);
+let isClickStopped = false;
+let isPaused = false;
+export function stopScrolling(type?: "pause" | "stop" | undefined) {
+  scrollState.isScrolling = false;
+  if (scrollInterval) {
+    clearInterval(scrollInterval);
+    scrollInterval = null;
+  }
+
+  const slider = document.querySelector(
+    ".scroll-slider"
+  ) as HTMLInputElement | null;
+  if (slider) slider.value = "0";
+
+  const speedLabel = document.querySelector(".speed-label");
+  if (speedLabel) {
+    const text =
+      type === "pause"
+        ? "Hover Paused"
+        : type === "stop"
+        ? "Stopped (Click)"
+        : "Stopped";
+    speedLabel.textContent = text;
+    speedLabel.className = "speed-label";
   }
 }
 
-export function resumeScrolling() {
+export function doPauseStopOrResume(type: "pause" | "stop") {
+  if (scrollState.isScrolling) {
+    prevScrollSpeed = scrollState.speed;
+    prevScrollLabel = scrollState.label;
+    wasLudicrous =
+      document.querySelector(".speed-label")?.classList.contains("ludicrous") ??
+      false;
+    isClickStopped = type === "stop";
+    isPaused = type === "pause";
+    stopScrolling(type);
+  } else if (
+    (isPaused && type === "pause") ||
+    (isClickStopped && type === "stop")
+  ) {
+    console.log("Resuming scrolling");
+    resumeScrolling();
+  }
+}
+function resumeScrolling() {
+  console.log("scrollstate.isScrolling", scrollState.isScrolling);
+  console.log("prevScrollSpeed", prevScrollSpeed);
   if (!scrollState.isScrolling && prevScrollSpeed > 0) {
     scrollState.isScrolling = true;
     scrollState.speed = prevScrollSpeed;
@@ -106,6 +128,20 @@ export function resumeScrolling() {
       }
     }
     startScrolling(scrollState.speed, labelText);
+    const slider = document.querySelector(
+      ".scroll-slider"
+    ) as HTMLInputElement | null;
+    if (slider) {
+      console.log("dispatching event");
+      slider.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+  }
+}
+
+export function updateScrollSpeed(speed: number) {
+  scrollState.speed = speed;
+  if (scrollState.isScrolling) {
+    startInterval(speed); // Restart with new speed
   }
 }
 
