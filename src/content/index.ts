@@ -1,5 +1,4 @@
 import * as readability from "@mozilla/readability";
-import magicScroll from "./magicScroll";
 import { themes } from "./styles/theme";
 import { generateCSS } from "./styles/reader";
 import { controlStyles } from "./styles/controls";
@@ -26,27 +25,36 @@ const sizes = [
 
 let currentPreferences = { ...defaultPreferences };
 
+// --- Reader Mode State ---
 let readerEnabled = false;
 let originalBodyHTML: string | null = null;
 let originalScroll: number = 0;
-type ReaderMode = "disabled" | "mozilla" | "magic-scroll";
-let currentMode: ReaderMode = "disabled";
-function enableReader(mode: ReaderMode) {
-  // Save original content and scroll position
-  if (!originalBodyHTML) {
-    originalBodyHTML = document.body.innerHTML;
-    if (mode === "magic-scroll") {
-      magicScroll.init();
-    }
-  }
-  if (!originalScroll) originalScroll = window.scrollY;
+
+function enableReader() {
   if (!readerEnabled) {
-    createReadableLayout();
+    // Save original content and scroll position
+    originalBodyHTML = document.body.innerHTML;
+    originalScroll = window.scrollY;
+    createReadableVersion();
     readerEnabled = true;
   }
-  if (currentMode !== mode) {
-    fillReadingContainer(mode);
-    currentMode = mode;
+}
+
+function disableReader() {
+  if (readerEnabled) {
+    stopScrolling();
+    // Restore original DOM and scroll position
+    if (originalBodyHTML !== null) {
+      document.body.innerHTML = originalBodyHTML;
+      window.scrollTo(0, originalScroll);
+    } else {
+      // If we don't have the original HTML, reload the page
+      window.location.reload();
+    }
+    // Remove any leftover styles
+    const style = document.getElementById("read-and-scroll-styles");
+    if (style) style.remove();
+    readerEnabled = false;
   }
 }
 
@@ -143,6 +151,7 @@ function createControls() {
   document.body.appendChild(controls);
 }
 
+// Function to update styles
 function updateStyles(newPrefs: Partial<StylePreferences>) {
   const styleEl = document.getElementById("read-and-scroll-styles");
   if (styleEl) {
@@ -195,6 +204,7 @@ function updateStyles(newPrefs: Partial<StylePreferences>) {
   }
 }
 
+// Inject our CSS
 function injectStyles() {
   const style = document.createElement("style");
   style.id = "read-and-scroll-styles";
@@ -204,50 +214,7 @@ function injectStyles() {
   document.head.appendChild(style);
 }
 
-function fillReadingContainer(mode: ReaderMode) {
-  const container = document.getElementById("read-and-scroll-container");
-  if (!container) {
-    console.error("Container not found. Cannot fill reading container.");
-    return;
-  }
-  // Require originalBodyHTML, reload if missing
-  if (!originalBodyHTML) {
-    window.location.reload();
-    return;
-  }
-  const documentClone = document.implementation.createHTMLDocument();
-  documentClone.body.innerHTML = originalBodyHTML;
-
-  if (mode === "mozilla") {
-    const reader = new readability.Readability(documentClone);
-    const article = reader.parse();
-    if (article && article.content) {
-      // Build a cleaner article HTML with title, byline, published time, and content
-      let html = `<h1>${article.title ?? ""}</h1>`;
-      if (article.byline) {
-        html += `<div class="readability-byline" style="font-size:1.05em;color:#666;margin-bottom:0.5em;">${article.byline}</div>`;
-      }
-      if (article.publishedTime) {
-        const date = new Date(article.publishedTime);
-        html += `<div class="readability-published" style="font-size:0.98em;color:#888;margin-bottom:1em;">Published: ${date.toLocaleString()}</div>`;
-      }
-      html += article.content;
-      container.innerHTML = html;
-    }
-  } else if (mode === "magic-scroll") {
-    if (magicScroll.article) {
-      container.innerHTML = magicScroll.article;
-    } else {
-      container.innerHTML =
-        '<div style="color:red;">No article content found by magicScroll.</div>';
-    }
-  }
-}
-
-function createReadableLayout() {
-  // Clear the body to avoid nesting
-  document.body.innerHTML = "";
-
+function createReadableVersion() {
   // Create the wrapper and container
   const wrapper = document.createElement("div");
   wrapper.id = "read-and-scroll-wrapper";
@@ -255,11 +222,33 @@ function createReadableLayout() {
   const container = document.createElement("div");
   container.id = "read-and-scroll-container";
 
+  // Create a new document for Readability
+  const documentClone = document.implementation.createHTMLDocument();
+  documentClone.documentElement.innerHTML = document.documentElement.innerHTML;
+
+  // Parse with Readability
+  const reader = new readability.Readability(documentClone);
+  const article = reader.parse();
+
+  // Set up the layout
+  document.body.innerHTML = "";
   wrapper.appendChild(container);
   document.body.appendChild(wrapper);
 
+  // Create and add controls
   createControls();
+
+  // Inject our styles after the container is in the DOM
   injectStyles();
+
+  if (article && article.content) {
+    console.log("[Read and Scroll] Extracted main content:", article);
+    container.innerHTML = article.content;
+  } else {
+    console.log("[Read and Scroll] No main content found.");
+    container.innerHTML =
+      "<p>Could not extract readable content from this page.</p>";
+  }
 
   // Pause scrolling on hover, resume on mouse leave
   container.addEventListener("mouseenter", () => {
@@ -268,6 +257,8 @@ function createReadableLayout() {
   container.addEventListener("mouseleave", () => {
     doPauseStopOrResume("pause"); // This will call resume if already paused
   });
+
+  // Toggle scrolling on fast click (not drag)
   let mouseDownTime = 0;
   let isDragging = false;
   container.addEventListener("mousedown", () => {
@@ -297,45 +288,22 @@ function createReadableLayout() {
   });
 }
 
-function disableReader() {
-  if (readerEnabled) {
-    stopScrolling();
-    // Remove any leftover reader containers/controls/styles
-    const wrapper = document.getElementById("read-and-scroll-wrapper");
-    if (wrapper && wrapper.parentNode) wrapper.parentNode.removeChild(wrapper);
-    const controls = document.getElementById("read-and-scroll-controls");
-    if (controls && controls.parentNode)
-      controls.parentNode.removeChild(controls);
-    const style = document.getElementById("read-and-scroll-styles");
-    if (style) style.remove();
-    // Restore original DOM and scroll position
-    if (originalBodyHTML !== null) {
-      document.body.innerHTML = originalBodyHTML;
-      window.scrollTo(0, originalScroll);
-    } else {
-      // If we don't have the original HTML, reload the page
-      window.location.reload();
-    }
-    readerEnabled = false;
-    currentMode = "disabled";
-  }
-}
-
 // Listen for messages from popup/background script
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-  if (message.type === "ENABLE_MOZILLA_READER") {
-    enableReader("mozilla");
-    sendResponse?.({ enabled: true, mode: "mozilla" });
-  } else if (message.type === "ENABLE_MAGIC_SCROLL_READER") {
-    enableReader("magic-scroll");
-    sendResponse?.({ enabled: true, mode: "magic-scroll" });
+  if (message.type === "ENABLE_READER") {
+    enableReader();
+    sendResponse({ enabled: true });
   } else if (message.type === "DISABLE_READER") {
     disableReader();
-    sendResponse?.({ enabled: false, mode: "disabled" });
+    sendResponse({ enabled: false });
   } else if (message.type === "GET_STATE") {
-    sendResponse?.({ enabled: readerEnabled, mode: currentMode });
+    sendResponse({ enabled: readerEnabled });
   } else if (message.type === "UPDATE_STYLES") {
     updateStyles(message.preferences);
-    sendResponse?.({ success: true });
+    sendResponse({ success: true });
   }
 });
+
+// Export for use in other parts of the extension
+export { updateStyles };
+export type { StylePreferences };

@@ -52,19 +52,64 @@
       cursor: pointer;
       margin-top: 0;
     }
+
+    .slider {
+      width: 36px;
+      height: 18px;
+      position: relative;
+      display: inline-block;
+    }
+
+    .slider input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider-span {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .3s;
+      border-radius: 18px;
+    }
+
+    .slider-span:before {
+      position: absolute;
+      content: "";
+      height: 14px;
+      width: 14px;
+      left: 2px;
+      bottom: 2px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.08);
+    }
+
+    input:checked+.slider-span {
+      background-color: #4caf50;
+    }
+
+    input:checked+.slider-span:before {
+      transform: translateX(18px);
+    }
   </style>
 </head>
 
 <body>
   <div class="popup-container">
     <h3 class="popup-title">Read and Scroll</h3>
-    <label class="toggle-label" style="margin-top: 8px;">
-      <span>Mode:</span>
-      <select id="reader-mode-select" style="margin-left: 8px;">
-        <option value="disabled" selected>Disabled</option>
-        <option value="mozilla">Mozilla Readability</option>
-        <option value="magic-scroll">Custom Readability</option>
-      </select>
+    <label class="toggle-label">
+      <span>Enabled:</span>
+      <span class="slider">
+        <input type="checkbox" id="enable-toggle" />
+        <span class="slider-span"></span>
+      </span>
     </label>
   </div>
 </body>
