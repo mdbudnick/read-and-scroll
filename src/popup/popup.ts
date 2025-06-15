@@ -37,30 +37,37 @@
 })();
 
 document.addEventListener("DOMContentLoaded", () => {
-  const toggle = document.getElementById("enable-toggle") as HTMLInputElement;
-  if (!toggle) return;
+  const modeSelect = document.getElementById(
+    "reader-mode-select"
+  ) as HTMLSelectElement;
+  if (!modeSelect) return;
 
-  // Restore the enabled/disabled state
+  // Restore the mode state
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const tab = tabs[0];
     if (!tab || !tab.id) return;
     const tabId = tab.id;
     chrome.tabs.sendMessage(tabId, { type: "GET_STATE" }, (response) => {
-      toggle.checked = response?.enabled || false;
+      if (response?.enabled === true && response?.mode) {
+        modeSelect.value = response.mode;
+      } else {
+        modeSelect.value = "disabled";
+      }
     });
   });
 
-  toggle.addEventListener("change", () => {
+  modeSelect.addEventListener("change", () => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const tab = tabs[0];
       if (!tab || !tab.id) return;
       const tabId = tab.id;
-      if (toggle.checked) {
-        // Enable: send message to content script to enable reader
-        chrome.tabs.sendMessage(tabId, { type: "ENABLE_READER" });
-      } else {
-        // Disable: send message to content script to disable reader
+      const mode = modeSelect.value;
+      if (mode === "disabled") {
         chrome.tabs.sendMessage(tabId, { type: "DISABLE_READER" });
+      } else if (mode === "mozilla") {
+        chrome.tabs.sendMessage(tabId, { type: "ENABLE_MOZILLA_READER" });
+      } else if (mode === "magic-scroll") {
+        chrome.tabs.sendMessage(tabId, { type: "ENABLE_MAGIC_SCROLL_READER" });
       }
     });
   });

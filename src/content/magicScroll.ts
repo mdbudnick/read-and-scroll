@@ -55,7 +55,7 @@ export type Readability = {
   htmlspecialchars: (s: string) => string;
 };
 
-const readability: Readability = {
+const magicScroll: Readability = {
   version: "0.5.1",
   iframeLoads: 0,
   frameHack: false,
@@ -87,25 +87,25 @@ const readability: Readability = {
       typeof preserveUnlikelyCandidates == "undefined"
         ? false
         : preserveUnlikelyCandidates;
-    if (document.body && !readability.bodyCache)
-      readability.bodyCache = document.body.innerHTML;
-    readability.prepDocument();
+    if (document.body && !magicScroll.bodyCache)
+      magicScroll.bodyCache = document.body.innerHTML;
+    magicScroll.prepDocument();
     // ss_load.show(); // Remove or replace as needed
-    const articleTitle = readability.getArticleTitle();
-    const articleContent = readability.grabArticle(preserveUnlikelyCandidates);
-    if (readability.getInnerText(articleContent, false) == "") {
+    const articleTitle = magicScroll.getArticleTitle();
+    const articleContent = magicScroll.grabArticle(preserveUnlikelyCandidates);
+    if (magicScroll.getInnerText(articleContent, false) == "") {
       if (!preserveUnlikelyCandidates) {
         log("Discarding Unlikely Candidates", 2);
-        document.body.innerHTML = readability.bodyCache!;
-        return readability.init(true);
+        document.body.innerHTML = magicScroll.bodyCache!;
+        return magicScroll.init(true);
       } else {
-        readability.error = true;
+        magicScroll.error = true;
         articleContent.innerHTML = "error";
       }
     } else {
       articleContent.insertBefore(articleTitle, articleContent.firstChild);
     }
-    readability.article = articleContent.innerHTML;
+    magicScroll.article = articleContent.innerHTML;
   },
   getArticleTitle: function () {
     const articleTitle = document.createElement("H1");
@@ -168,7 +168,7 @@ const readability: Readability = {
         if (frameset && frameset.parentNode)
           frameset.parentNode.removeChild(frameset);
 
-        readability.frameHack = true;
+        magicScroll.frameHack = true;
       }
     }
 
@@ -215,7 +215,7 @@ const readability: Readability = {
 
     if (
       articles.length > 0 &&
-      window.location.href.search(readability.regexps.ignoreArticleTagRe) == -1
+      window.location.href.search(magicScroll.regexps.ignoreArticleTagRe) == -1
     ) {
       let result = "";
       for (let i = 0; i < articles.length; i++) {
@@ -229,23 +229,23 @@ const readability: Readability = {
       /* Turn all double br's into p's */
       /* Note, this is pretty costly as far as processing goes. Maybe optimize later. */
       document.body.innerHTML = document.body.innerHTML
-        .replace(readability.regexps.replaceBrsRe, "</p><p>")
-        .replace(readability.regexps.replaceFontsRe, "<$1span>");
+        .replace(magicScroll.regexps.replaceBrsRe, "</p><p>")
+        .replace(magicScroll.regexps.replaceFontsRe, "<$1span>");
     }
   },
   prepArticle: function (articleContent: HTMLElement) {
-    readability.cleanStyles(articleContent);
-    readability.killBreaks(articleContent);
-    readability.clean(articleContent, "form");
-    readability.clean(articleContent, "object");
-    readability.clean(articleContent, "h1");
+    magicScroll.cleanStyles(articleContent);
+    magicScroll.killBreaks(articleContent);
+    magicScroll.clean(articleContent, "form");
+    magicScroll.clean(articleContent, "object");
+    magicScroll.clean(articleContent, "h1");
     if (articleContent.getElementsByTagName("h2").length == 1)
-      readability.clean(articleContent, "h2");
-    readability.clean(articleContent, "iframe");
-    readability.cleanHeaders(articleContent);
-    readability.cleanConditionally(articleContent, "table");
-    readability.cleanConditionally(articleContent, "ul");
-    readability.cleanConditionally(articleContent, "div");
+      magicScroll.clean(articleContent, "h2");
+    magicScroll.clean(articleContent, "iframe");
+    magicScroll.cleanHeaders(articleContent);
+    magicScroll.cleanConditionally(articleContent, "table");
+    magicScroll.cleanConditionally(articleContent, "ul");
+    magicScroll.cleanConditionally(articleContent, "div");
     const articleParagraphs = articleContent.getElementsByTagName("p");
     for (let i = articleParagraphs.length - 1; i >= 0; i--) {
       const imgCount = articleParagraphs[i].getElementsByTagName("img").length;
@@ -257,7 +257,7 @@ const readability: Readability = {
         imgCount == 0 &&
         embedCount == 0 &&
         objectCount == 0 &&
-        readability.getInnerText(articleParagraphs[i], false) == ""
+        magicScroll.getInnerText(articleParagraphs[i], false) == ""
       ) {
         articleParagraphs[i].parentNode!.removeChild(articleParagraphs[i]);
       }
@@ -326,7 +326,7 @@ const readability: Readability = {
         node.readability.contentScore -= 5;
         break;
     }
-    node.readability.contentScore += readability.getClassWeight(node);
+    node.readability.contentScore += magicScroll.getClassWeight(node);
   },
   grabArticle: function (preserveUnlikelyCandidates?: boolean) {
     for (
@@ -340,10 +340,10 @@ const readability: Readability = {
         const unlikelyMatchString = node.className + node.id;
         if (
           unlikelyMatchString.search(
-            readability.regexps.unlikelyCandidatesRe
+            magicScroll.regexps.unlikelyCandidatesRe
           ) !== -1 &&
           unlikelyMatchString.search(
-            readability.regexps.okMaybeItsACandidateRe
+            magicScroll.regexps.okMaybeItsACandidateRe
           ) == -1 &&
           node.tagName !== "BODY"
         ) {
@@ -356,7 +356,7 @@ const readability: Readability = {
       }
       if (node.tagName === "DIV") {
         if (
-          node.innerHTML.search(readability.regexps.divToPElementsRe) === -1
+          node.innerHTML.search(magicScroll.regexps.divToPElementsRe) === -1
         ) {
           log("Altering div to p", 2);
           const newNode = document.createElement("p");
@@ -393,18 +393,18 @@ const readability: Readability = {
         .parentNode as ReadabilityElement | null;
       const grandParentNode =
         parentNode && (parentNode.parentNode as ReadabilityElement | null);
-      const innerText = readability.getInnerText(allParagraphs[j]);
+      const innerText = magicScroll.getInnerText(allParagraphs[j]);
       if (innerText.length < 25) continue;
       log("Considering paragraph " + j + ": " + innerText.substring(0, 20), 3);
       if (parentNode && typeof parentNode.readability === "undefined") {
-        readability.initializeNode(parentNode);
+        magicScroll.initializeNode(parentNode);
         candidates.push(parentNode);
       }
       if (
         grandParentNode &&
         typeof grandParentNode.readability === "undefined"
       ) {
-        readability.initializeNode(grandParentNode);
+        magicScroll.initializeNode(grandParentNode);
         candidates.push(grandParentNode);
       }
       let contentScore = 0;
@@ -424,7 +424,7 @@ const readability: Readability = {
       if (candidate.readability) {
         candidate.readability.contentScore =
           candidate.readability.contentScore *
-          (1 - readability.getLinkDensity(candidate));
+          (1 - magicScroll.getLinkDensity(candidate));
         log(
           "Candidate: " +
             candidate +
@@ -444,7 +444,7 @@ const readability: Readability = {
           topCandidate = candidate;
         }
         if (
-          readability.grandParent &&
+          magicScroll.grandParent &&
           candidate.readability.contentScore > 50
         ) {
           topCandidates.push(candidate);
@@ -456,7 +456,7 @@ const readability: Readability = {
       topCandidate.innerHTML = document.body.innerHTML;
       document.body.innerHTML = "";
       document.body.appendChild(topCandidate);
-      readability.initializeNode(topCandidate);
+      magicScroll.initializeNode(topCandidate);
     }
     if (topCandidates.length === 0) {
       topCandidates.push(topCandidate);
@@ -506,8 +506,8 @@ const readability: Readability = {
           append = true;
         }
         if (siblingNode.nodeName == "P") {
-          const linkDensity = readability.getLinkDensity(siblingNode);
-          const nodeContent = readability.getInnerText(siblingNode);
+          const linkDensity = magicScroll.getLinkDensity(siblingNode);
+          const nodeContent = magicScroll.getInnerText(siblingNode);
           const nodeLength = nodeContent.length;
           if (nodeLength > 80 && linkDensity < 0.25) {
             append = true;
@@ -527,7 +527,7 @@ const readability: Readability = {
         }
       }
     }
-    readability.prepArticle(articleContent);
+    magicScroll.prepArticle(articleContent);
     return articleContent;
   },
   getInnerText: function (e: HTMLElement, normalizeSpaces?: boolean) {
@@ -538,20 +538,20 @@ const readability: Readability = {
     const isIE = /MSIE|Trident/.test(window.navigator.userAgent);
     if (isIE && (e as unknown as { innerText?: string }).innerText) {
       textContent = (e as unknown as { innerText: string }).innerText.replace(
-        readability.regexps.trimRe,
+        magicScroll.regexps.trimRe,
         ""
       );
     } else {
       textContent =
-        e.textContent?.replace(readability.regexps.trimRe, "") || "";
+        e.textContent?.replace(magicScroll.regexps.trimRe, "") || "";
     }
     if (normalizeSpaces)
-      return textContent.replace(readability.regexps.normalizeRe, " ");
+      return textContent.replace(magicScroll.regexps.normalizeRe, " ");
     else return textContent;
   },
   getCharCount: function (e: HTMLElement, s?: string) {
     s = s || ",";
-    return readability.getInnerText(e).split(s).length;
+    return magicScroll.getInnerText(e).split(s).length;
   },
   cleanStyles: function (e: HTMLElement) {
     e = e || document.body;
@@ -567,7 +567,7 @@ const readability: Readability = {
         if ((cur as HTMLElement).className != "readability-styled") {
           (cur as HTMLElement).removeAttribute("style");
         }
-        readability.cleanStyles(cur);
+        magicScroll.cleanStyles(cur);
       }
       cur = cur.nextSibling as HTMLElement | null;
     }
@@ -586,23 +586,23 @@ const readability: Readability = {
       }
     }
     if (e.className != "") {
-      if (e.className.search(readability.regexps.negativeRe) !== -1)
+      if (e.className.search(magicScroll.regexps.negativeRe) !== -1)
         weight -= 25;
-      if (e.className.search(readability.regexps.positiveRe) !== -1)
+      if (e.className.search(magicScroll.regexps.positiveRe) !== -1)
         weight += 25;
     }
     if (typeof e.id == "string" && e.id != "") {
-      if (e.id.search(readability.regexps.negativeRe) !== -1) weight -= 25;
-      if (e.id.search(readability.regexps.positiveRe) !== -1) weight += 25;
+      if (e.id.search(magicScroll.regexps.negativeRe) !== -1) weight -= 25;
+      if (e.id.search(magicScroll.regexps.positiveRe) !== -1) weight += 25;
     }
     return weight;
   },
   getLinkDensity: function (e: HTMLElement) {
     const links = e.getElementsByTagName("a");
-    const textLength = readability.getInnerText(e).length;
+    const textLength = magicScroll.getInnerText(e).length;
     let linkLength = 0;
     for (let i = 0; i < links.length; i++) {
-      linkLength += readability.getInnerText(links[i] as HTMLElement).length;
+      linkLength += magicScroll.getInnerText(links[i] as HTMLElement).length;
     }
     if (textLength === 0) return 0;
     return linkLength / textLength;
@@ -610,7 +610,7 @@ const readability: Readability = {
   killBreaks: function (e: HTMLElement) {
     try {
       e.innerHTML = e.innerHTML.replace(
-        readability.regexps.killBreaksRe,
+        magicScroll.regexps.killBreaksRe,
         "<br />"
       );
     } catch {
@@ -624,7 +624,7 @@ const readability: Readability = {
       if (
         isEmbed &&
         (targetList[y] as HTMLElement).innerHTML.search(
-          readability.regexps.videoRe
+          magicScroll.regexps.videoRe
         ) !== -1
       ) {
         continue;
@@ -637,7 +637,7 @@ const readability: Readability = {
     const curTagsLength = tagsList.length;
     for (let i = curTagsLength - 1; i >= 0; i--) {
       const el = tagsList[i] as ReadabilityElement;
-      const weight = readability.getClassWeight(el);
+      const weight = magicScroll.getClassWeight(el);
       log(
         "Cleaning Conditionally " +
           el +
@@ -653,7 +653,7 @@ const readability: Readability = {
       );
       if (weight < 0) {
         el.parentNode!.removeChild(el);
-      } else if (readability.getCharCount(el, ",") < 10) {
+      } else if (magicScroll.getCharCount(el, ",") < 10) {
         const p = el.getElementsByTagName("p").length;
         const img = el.getElementsByTagName("img").length;
         const li = el.getElementsByTagName("li").length - 100;
@@ -661,12 +661,12 @@ const readability: Readability = {
         let embedCount = 0;
         const embeds = el.getElementsByTagName("embed");
         for (let ei = 0, il = embeds.length; ei < il; ei++) {
-          if (embeds[ei].src.search(readability.regexps.videoRe) == -1) {
+          if (embeds[ei].src.search(magicScroll.regexps.videoRe) == -1) {
             embedCount++;
           }
         }
-        const linkDensity = readability.getLinkDensity(el);
-        const contentLength = readability.getInnerText(el).length;
+        const linkDensity = magicScroll.getLinkDensity(el);
+        const contentLength = magicScroll.getInnerText(el).length;
         let toRemove = false;
         if (img > p) {
           toRemove = true;
@@ -695,8 +695,8 @@ const readability: Readability = {
       for (let i = headers.length - 1; i >= 0; i--) {
         const el = headers[i] as ReadabilityElement;
         if (
-          readability.getClassWeight(el) < 0 ||
-          readability.getLinkDensity(el) > 0.33
+          magicScroll.getClassWeight(el) < 0 ||
+          magicScroll.getLinkDensity(el) > 0.33
         ) {
           el.parentNode!.removeChild(el);
         }
@@ -704,8 +704,8 @@ const readability: Readability = {
     }
   },
   removeFrame: function () {
-    readability.iframeLoads++;
-    if (readability.iframeLoads > 3) {
+    magicScroll.iframeLoads++;
+    if (magicScroll.iframeLoads > 3) {
       const emailContainer = document.getElementById("email-container");
       if (null !== emailContainer) {
         emailContainer.parentNode!.removeChild(emailContainer);
@@ -714,7 +714,7 @@ const readability: Readability = {
       if (null !== kindleContainer) {
         kindleContainer.parentNode!.removeChild(kindleContainer);
       }
-      readability.iframeLoads = 0;
+      magicScroll.iframeLoads = 0;
     }
   },
   htmlspecialchars: function (s: string) {
@@ -739,4 +739,4 @@ function log(msg: string, level?: number) {
   }
 }
 
-export default readability;
+export default magicScroll;
