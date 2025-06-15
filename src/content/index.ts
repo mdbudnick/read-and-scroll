@@ -242,8 +242,17 @@ function createReadableVersion() {
   injectStyles();
 
   if (article && article.content) {
-    console.log("[Read and Scroll] Extracted main content:", article);
-    container.innerHTML = article.content;
+    // Build a cleaner article HTML with title, byline, published time, and content
+    let html = `<h1>${article.title ?? ""}</h1>`;
+    if (article.byline) {
+      html += `<div class="readability-byline" style="font-size:1.05em;color:#666;margin-bottom:0.5em;">${article.byline}</div>`;
+    }
+    if (article.publishedTime) {
+      const date = new Date(article.publishedTime);
+      html += `<div class="readability-published" style="font-size:0.98em;color:#888;margin-bottom:1em;">Published: ${date.toLocaleString()}</div>`;
+    }
+    html += article.content;
+    container.innerHTML = html;
   } else {
     console.log("[Read and Scroll] No main content found.");
     container.innerHTML =
