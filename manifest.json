@@ -1,15 +1,22 @@
 {
   "manifest_version": 3,
   "name": "Read and Scroll",
-  "version": "0.1.0",
+  "short_name": "ReadScroll",
+  "version": "1.0.0",
   "description": "A cross-browser extension that adds a reader mode and auto-scroll to any website.",
+  "icons": {
+    "16": "rs-16.png",
+    "32": "rs-32.png",
+    "48": "rs-48.png",
+    "128": "rs-128.png"
+  },
   "action": {
     "default_popup": "src/popup/index.html",
     "default_icon": {
-      "16": "icon-16.png",
-      "32": "icon-32.png",
-      "48": "icon-48.png",
-      "128": "icon-128.png"
+      "16": "rs-16.png",
+      "32": "rs-32.png",
+      "48": "rs-48.png",
+      "128": "rs-128.png"
     }
   },
   "background": {
@@ -26,10 +33,10 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "icon-128.png",
-        "icon-48.png",
-        "icon-32.png",
-        "icon-16.png"
+        "rs-128.png",
+        "rs-48.png",
+        "rs-32.png",
+        "rs-16.png"
       ],
       "matches": ["<all_urls>"]
     }
