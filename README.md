@@ -60,3 +60,7 @@ In the project directory, you can run:
 ## Privacy
 
 This extension processes web page content locally in your browser to provide its features. No browsing data or personal information is collected or transmitted. For more details, please see our [Privacy Policy](PrivacyPolicy.md).
+
+## License
+
+This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.
