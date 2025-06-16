@@ -215,20 +215,6 @@ function injectStyles() {
 }
 
 function createReadableVersion() {
-  // Remove common scroll-blocking overlays and reset scroll styles
-  [document.body, document.documentElement].forEach((el) => {
-    el.style.overflow = "auto";
-    el.style.position = "static";
-    el.style.height = "auto";
-  });
-  // Remove overlays and modals that may block scrolling
-  document
-    .querySelectorAll(
-      '[class*="overlay"], [class*="modal"], [id*="overlay"], [id*="modal"], [class*="paywall"], [id*="paywall"], [class*="block"], [id*="block"], [class*="gate"], [id*="gate"]'
-    )
-    .forEach((el) => {
-      (el as HTMLElement).style.display = "none";
-    });
   // Create the wrapper and container
   const wrapper = document.createElement("div");
   wrapper.id = "read-and-scroll-wrapper";
@@ -254,10 +240,6 @@ function createReadableVersion() {
 
   // Inject our styles after the container is in the DOM
   injectStyles();
-
-  // Ensure scrolling is enabled for the reader container
-  container.style.overflowY = "auto";
-  container.style.maxHeight = "100vh";
 
   if (article && article.content) {
     // Build a cleaner article HTML with title, byline, published time, and content
