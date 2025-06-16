@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "build:dev": "vite build -m dev && cp manifest.json dist/manifest.json",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "zip": "npm run build && zip -r release.zip dist"
   },
   "dependencies": {
     "@mozilla/readability": "^0.6.0",
