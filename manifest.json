@@ -2,8 +2,8 @@
   "manifest_version": 3,
   "name": "Read and Scroll",
   "short_name": "ReadScroll",
-  "version": "1.0.1",
-  "description": "A cross-browser extension that adds a reader mode and auto-scroll to any website.",
+  "version": "1.0.2",
+  "description": "An extension that adds a reader mode and auto-scroll to any website in Chrome.",
   "icons": {
     "16": "rs-16.png",
     "32": "rs-32.png",
