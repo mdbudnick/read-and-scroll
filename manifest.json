@@ -28,7 +28,7 @@
       "js": ["content.js"]
     }
   ],
-  "permissions": ["activeTab", "scripting"],
+  "permissions": ["activeTab"],
   "web_accessible_resources": [
     {
       "resources": [
