@@ -29,9 +29,22 @@ let readerEnabled = false;
 let originalBodyHTML: string | null = null;
 let originalScroll: number = 0;
 
+function checkAlwaysEnabled() {
+  chrome.storage.local.get(["alwaysEnabled"], (result) => {
+    if (result.alwaysEnabled && !readerEnabled) {
+      enableReader();
+    }
+  });
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", checkAlwaysEnabled);
+} else {
+  checkAlwaysEnabled();
+}
+
 function enableReader() {
   if (!readerEnabled) {
-    // Save original content and scroll position
     originalBodyHTML = document.body.innerHTML;
     originalScroll = window.scrollY;
     createReadableVersion();
