@@ -38,7 +38,15 @@
 
 document.addEventListener("DOMContentLoaded", () => {
   const toggle = document.getElementById("enable-toggle") as HTMLInputElement;
-  if (!toggle) return;
+  const alwaysEnabledToggle = document.getElementById(
+    "always-enabled-toggle"
+  ) as HTMLInputElement;
+  if (!toggle || !alwaysEnabledToggle) return;
+
+  // Restore the "Always enabled" state from storage
+  chrome.storage.local.get(["alwaysEnabled"], (result) => {
+    alwaysEnabledToggle.checked = result.alwaysEnabled || false;
+  });
 
   // Restore the enabled/disabled state
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -48,6 +56,18 @@ document.addEventListener("DOMContentLoaded", () => {
     chrome.tabs.sendMessage(tabId, { type: "GET_STATE" }, (response) => {
       toggle.checked = response?.enabled || false;
     });
+  });
+
+  alwaysEnabledToggle.addEventListener("change", () => {
+    chrome.storage.local.set(
+      { alwaysEnabled: alwaysEnabledToggle.checked },
+      () => {
+        console.log(
+          "Always enabled setting saved:",
+          alwaysEnabledToggle.checked
+        );
+      }
+    );
   });
 
   toggle.addEventListener("change", () => {
