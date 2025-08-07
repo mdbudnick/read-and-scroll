@@ -37,24 +37,30 @@
 })();
 
 document.addEventListener("DOMContentLoaded", () => {
-  const toggle = document.getElementById("enable-toggle") as HTMLInputElement;
+  const enabledToggle = document.getElementById(
+    "enable-toggle"
+  ) as HTMLInputElement;
   const alwaysEnabledToggle = document.getElementById(
     "always-enabled-toggle"
   ) as HTMLInputElement;
-  if (!toggle || !alwaysEnabledToggle) return;
+  const saveSettingsToggle = document.getElementById(
+    "save-settings-toggle"
+  ) as HTMLInputElement;
+  if (!enabledToggle || !alwaysEnabledToggle || !saveSettingsToggle) return;
 
-  // Restore the "Always enabled" state from storage
   chrome.storage.local.get(["alwaysEnabled"], (result) => {
     alwaysEnabledToggle.checked = result.alwaysEnabled || false;
   });
+  chrome.storage.local.get(["saveSettings"], (result) => {
+    saveSettingsToggle.checked = result.saveSettings || false;
+  });
 
-  // Restore the enabled/disabled state
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const tab = tabs[0];
     if (!tab || !tab.id) return;
     const tabId = tab.id;
     chrome.tabs.sendMessage(tabId, { type: "GET_STATE" }, (response) => {
-      toggle.checked = response?.enabled || false;
+      enabledToggle.checked = response?.enabled || false;
     });
   });
 
@@ -70,12 +76,21 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   });
 
-  toggle.addEventListener("change", () => {
+  saveSettingsToggle.addEventListener("change", () => {
+    chrome.storage.local.set(
+      { saveSettings: saveSettingsToggle.checked },
+      () => {
+        console.log("Save settings setting saved:", saveSettingsToggle.checked);
+      }
+    );
+  });
+
+  enabledToggle.addEventListener("change", () => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const tab = tabs[0];
       if (!tab || !tab.id) return;
       const tabId = tab.id;
-      if (toggle.checked) {
+      if (enabledToggle.checked) {
         // Enable: send message to content script to enable reader
         chrome.tabs.sendMessage(tabId, { type: "ENABLE_READER" });
       } else {
