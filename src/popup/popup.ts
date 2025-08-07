@@ -36,6 +36,8 @@
   }
 })();
 
+const STORAGE_PREFIX = "readAndScrollConfig_";
+
 document.addEventListener("DOMContentLoaded", () => {
   const enabledToggle = document.getElementById(
     "enable-toggle"
@@ -48,11 +50,13 @@ document.addEventListener("DOMContentLoaded", () => {
   ) as HTMLInputElement;
   if (!enabledToggle || !alwaysEnabledToggle || !saveSettingsToggle) return;
 
-  chrome.storage.local.get(["alwaysEnabled"], (result) => {
-    alwaysEnabledToggle.checked = result.alwaysEnabled || false;
+  chrome.storage.local.get([`${STORAGE_PREFIX}alwaysEnabled`], (result) => {
+    alwaysEnabledToggle.checked =
+      result[`${STORAGE_PREFIX}alwaysEnabled`] || false;
   });
-  chrome.storage.local.get(["saveSettings"], (result) => {
-    saveSettingsToggle.checked = result.saveSettings || false;
+  chrome.storage.local.get([`${STORAGE_PREFIX}saveSettings`], (result) => {
+    saveSettingsToggle.checked =
+      result[`${STORAGE_PREFIX}saveSettings`] || false;
   });
 
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -66,7 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   alwaysEnabledToggle.addEventListener("change", () => {
     chrome.storage.local.set(
-      { alwaysEnabled: alwaysEnabledToggle.checked },
+      { [`${STORAGE_PREFIX}alwaysEnabled`]: alwaysEnabledToggle.checked },
       () => {
         console.log(
           "Always enabled setting saved:",
@@ -78,7 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   saveSettingsToggle.addEventListener("change", () => {
     chrome.storage.local.set(
-      { saveSettings: saveSettingsToggle.checked },
+      { [`${STORAGE_PREFIX}saveSettings`]: saveSettingsToggle.checked },
       () => {
         console.log("Save settings setting saved:", saveSettingsToggle.checked);
       }
