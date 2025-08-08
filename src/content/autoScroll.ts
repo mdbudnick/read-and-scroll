@@ -1,3 +1,5 @@
+const STORAGE_PREFIX = "readAndScrollConfig_";
+
 export interface ScrollState {
   isScrolling: boolean;
   speed: number; // This is scroll speed
@@ -5,12 +7,58 @@ export interface ScrollState {
   label: string;
 }
 
-const scrollState: ScrollState = {
+const defaultScrollState: ScrollState = {
   isScrolling: false,
   speed: 0,
   value: "0",
   label: "0%",
 };
+
+const scrollState: ScrollState = { ...defaultScrollState };
+
+let saveSettingsEnabled = false;
+
+async function loadScrollStateFromStorage(): Promise<ScrollState> {
+  return new Promise((resolve) => {
+    chrome.storage.local.get([`${STORAGE_PREFIX}saveSettings`], (result) => {
+      saveSettingsEnabled =
+        String(result[`${STORAGE_PREFIX}saveSettings`]) === "true";
+
+      if (saveSettingsEnabled) {
+        // Get all ScrollState keys from storage
+        const scrollKeys = Object.keys(defaultScrollState).map(
+          (key) => `${STORAGE_PREFIX}scrollState_${key}`
+        );
+        chrome.storage.local.get(scrollKeys, (scrollResult) => {
+          const loadedScrollState: Partial<ScrollState> = {};
+
+          // Extract saved scroll state
+          Object.keys(defaultScrollState).forEach((key) => {
+            const storageKey = `${STORAGE_PREFIX}scrollState_${key}`;
+            if (scrollResult[storageKey] !== undefined) {
+              loadedScrollState[key as keyof ScrollState] =
+                scrollResult[storageKey];
+            }
+          });
+
+          // Merge with defaults
+          const mergedScrollState = {
+            ...defaultScrollState,
+            ...loadedScrollState,
+          };
+          resolve(mergedScrollState);
+        });
+      } else {
+        // saveSettings is disabled, use defaults
+        resolve(defaultScrollState);
+      }
+    });
+  });
+}
+
+loadScrollStateFromStorage().then((state) => {
+  Object.assign(scrollState, state);
+});
 
 let scrollInterval: number | null = null;
 
