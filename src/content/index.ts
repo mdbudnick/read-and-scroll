@@ -62,7 +62,6 @@ async function loadPreferencesFromStorage(): Promise<StylePreferences> {
           });
 
           const mergedPrefs = { ...defaultPreferences, ...loadedPrefs };
-          console.log("merged prefs:", JSON.stringify(mergedPrefs, null, 2));
           resolve(mergedPrefs);
         });
       } else {
@@ -204,11 +203,7 @@ loadPreferencesFromStorage().then((prefs) => {
       speedLabel.className = "speed-label";
       speedLabel.textContent = currentScrollState.label;
 
-      slider.addEventListener("input", (e) => {
-        const sliderElement = e.target as HTMLInputElement;
-        currentScrollState.value = sliderElement.value;
-        const value = parseInt(currentScrollState.value);
-
+      const updateScrollSpeed = (value: number) => {
         if (value === 0) {
           stopScrolling();
         } else if (value === 100) {
@@ -217,6 +212,22 @@ loadPreferencesFromStorage().then((prefs) => {
         } else {
           startScrolling(value, `${value}%`);
           speedLabel.className = "speed-label";
+        }
+      };
+
+      let throttleTimeout: ReturnType<typeof setTimeout> | null = null;
+      slider.addEventListener("input", (e) => {
+        const sliderElement = e.target as HTMLInputElement;
+        currentScrollState.value = sliderElement.value;
+
+        if (throttleTimeout) {
+          return; // Throttle to prevent too many updates
+        } else {
+          throttleTimeout = setTimeout(() => {
+            const value = parseInt(currentScrollState.value);
+            updateScrollSpeed(value);
+            throttleTimeout = null;
+          }, 50); // 50ms throttle
         }
       });
 
@@ -228,6 +239,11 @@ loadPreferencesFromStorage().then((prefs) => {
       controls.appendChild(scrollControl);
 
       document.body.appendChild(controls);
+
+      const initialValue = parseInt(currentScrollState.value);
+      if (initialValue > 0) {
+        updateScrollSpeed(initialValue);
+      }
     }
 
     function updateStyles(newPrefs: Partial<StylePreferences>) {
