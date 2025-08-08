@@ -68,13 +68,13 @@ loadScrollStateFromStorage().then((state) => {
 
 let scrollInterval: number | null = null;
 
-function saveScrollSettings() {
+async function saveScrollSettings() {
   checkSaveSettingsEnabled().then((saveEnabled) => {
     if (saveEnabled) {
       chrome.storage.local.set({
         [`${STORAGE_PREFIX}isScrolling`]: scrollState.isScrolling,
-        [`${STORAGE_PREFIX}scrollValue`]: scrollState.value,
-        [`${STORAGE_PREFIX}scrollSpeed`]: scrollState.speed,
+        [`${STORAGE_PREFIX}value`]: scrollState.value,
+        [`${STORAGE_PREFIX}speed`]: scrollState.speed,
       });
     }
   });
@@ -90,7 +90,7 @@ export function startScrolling(value: number, labelText?: string) {
     scrollState.isScrolling = true;
     scrollState.speed = calculateScrollSpeed(value);
     saveScrollSettings();
-    startInterval(value);
+    startInterval();
     // Set label before dispatching event so the event handler can use it
     if (labelText) {
       const speedLabel = document.querySelector(".speed-label");
@@ -105,9 +105,7 @@ export function startScrolling(value: number, labelText?: string) {
 }
 
 // Only handles the interval logic now
-export function startInterval(value: number) {
-  scrollState.isScrolling = true;
-  scrollState.speed = calculateScrollSpeed(value);
+export function startInterval() {
   if (scrollInterval) {
     clearInterval(scrollInterval);
   }
@@ -135,7 +133,7 @@ export function startInterval(value: number) {
 let prevScrollValue = "0";
 let prevScrollLabel = "";
 let wasLudicrous = false;
-export function stopScrolling(type?: "pause" | "stop" | "endofpage") {
+export async function stopScrolling(type?: "pause" | "stop" | "endofpage") {
   if (scrollInterval) {
     clearInterval(scrollInterval);
     scrollInterval = null;
@@ -172,7 +170,7 @@ export function stopScrolling(type?: "pause" | "stop" | "endofpage") {
     speedLabel.textContent = text;
     speedLabel.className = "speed-label";
     scrollState.label = text; // Update the label in scrollState
-    saveScrollLabelState();
+    await saveScrollLabelState();
   }
 }
 
@@ -180,9 +178,8 @@ function savePauseStopState() {
   checkSaveSettingsEnabled().then((saveEnabled) => {
     if (saveEnabled) {
       chrome.storage.local.set({
-        [`${STORAGE_PREFIX}scrollState_isPaused`]: scrollState.isPaused,
-        [`${STORAGE_PREFIX}scrollState_isClickStopped`]:
-          scrollState.isClickStopped,
+        [`${STORAGE_PREFIX}isPaused`]: scrollState.isPaused,
+        [`${STORAGE_PREFIX}isClickStopped`]: scrollState.isClickStopped,
       });
     }
   });
@@ -252,7 +249,7 @@ function calculateScrollSpeed(sliderValue: number): number {
   return sliderValue === 0 ? 0 : Math.pow(sliderValue / 100, 2) * 5 + 0.5;
 }
 
-function saveScrollLabelState() {
+async function saveScrollLabelState() {
   checkSaveSettingsEnabled().then((saveEnabled) => {
     if (saveEnabled) {
       chrome.storage.local.set({
