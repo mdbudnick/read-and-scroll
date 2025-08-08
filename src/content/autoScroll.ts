@@ -5,43 +5,49 @@ export interface ScrollState {
   speed: number; // This is scroll speed
   value: string; // This is slider value
   label: string;
+  isClickStopped: boolean;
+  isPaused: boolean;
 }
 
-const defaultScrollState: ScrollState = {
+export const defaultScrollState: ScrollState = {
   isScrolling: false,
   speed: 0,
   value: "0",
-  label: "0%",
+  label: "Stopped",
+  isClickStopped: false,
+  isPaused: false,
 };
 
 const scrollState: ScrollState = { ...defaultScrollState };
 
-let saveSettingsEnabled = false;
-
-async function loadScrollStateFromStorage(): Promise<ScrollState> {
+async function checkSaveSettingsEnabled(): Promise<boolean> {
   return new Promise((resolve) => {
     chrome.storage.local.get([`${STORAGE_PREFIX}saveSettings`], (result) => {
-      saveSettingsEnabled =
+      const enabled =
         String(result[`${STORAGE_PREFIX}saveSettings`]) === "true";
+      resolve(enabled);
+    });
+  });
+}
 
-      if (saveSettingsEnabled) {
-        // Get all ScrollState keys from storage
+export async function loadScrollStateFromStorage(): Promise<ScrollState> {
+  return new Promise((resolve) => {
+    checkSaveSettingsEnabled().then((saveEnabled) => {
+      if (saveEnabled) {
         const scrollKeys = Object.keys(defaultScrollState).map(
-          (key) => `${STORAGE_PREFIX}scrollState_${key}`
+          (key) => `${STORAGE_PREFIX}${key}`
         );
         chrome.storage.local.get(scrollKeys, (scrollResult) => {
           const loadedScrollState: Partial<ScrollState> = {};
 
-          // Extract saved scroll state
           Object.keys(defaultScrollState).forEach((key) => {
-            const storageKey = `${STORAGE_PREFIX}scrollState_${key}`;
+            const storageKey = `${STORAGE_PREFIX}${key}`;
             if (scrollResult[storageKey] !== undefined) {
               loadedScrollState[key as keyof ScrollState] =
                 scrollResult[storageKey];
             }
           });
 
-          // Merge with defaults
           const mergedScrollState = {
             ...defaultScrollState,
             ...loadedScrollState,
@@ -62,6 +68,18 @@ loadScrollStateFromStorage().then((state) => {
 
 let scrollInterval: number | null = null;
 
+function saveScrollSettings() {
+  checkSaveSettingsEnabled().then((saveEnabled) => {
+    if (saveEnabled) {
+      chrome.storage.local.set({
+        [`${STORAGE_PREFIX}isScrolling`]: scrollState.isScrolling,
+        [`${STORAGE_PREFIX}scrollValue`]: scrollState.value,
+        [`${STORAGE_PREFIX}scrollSpeed`]: scrollState.speed,
+      });
+    }
+  });
+}
+
 export function startScrolling(value: number, labelText?: string) {
   const slider = document.querySelector(
     ".scroll-slider"
@@ -71,6 +89,7 @@ export function startScrolling(value: number, labelText?: string) {
     scrollState.value = slider.value;
     scrollState.isScrolling = true;
     scrollState.speed = calculateScrollSpeed(value);
+    saveScrollSettings();
     startInterval(value);
     // Set label before dispatching event so the event handler can use it
     if (labelText) {
@@ -78,6 +97,7 @@ export function startScrolling(value: number, labelText?: string) {
       if (speedLabel) {
         speedLabel.textContent = labelText;
         scrollState.label = labelText;
+        saveScrollLabelState();
       }
     }
     slider.dispatchEvent(new Event("input", { bubbles: true }));
@@ -115,8 +135,6 @@ export function startInterval(value: number) {
 let prevScrollValue = "0";
 let prevScrollLabel = "";
 let wasLudicrous = false;
-let isClickStopped = false;
-let isPaused = false;
 export function stopScrolling(type?: "pause" | "stop" | "endofpage") {
   if (scrollInterval) {
     clearInterval(scrollInterval);
@@ -126,12 +144,14 @@ export function stopScrolling(type?: "pause" | "stop" | "endofpage") {
     prevScrollValue = scrollState.value;
     scrollState.speed = 0;
     scrollState.value = "0";
+    saveScrollSettings();
     prevScrollLabel = scrollState.label; // Reupdated below
     wasLudicrous =
       document.querySelector(".speed-label")?.classList.contains("ludicrous") ??
       false;
-    isClickStopped = type === "stop";
-    isPaused = type === "pause";
+    scrollState.isClickStopped = type === "stop";
+    scrollState.isPaused = type === "pause";
+    savePauseStopState();
   }
 
   const slider = document.querySelector(
@@ -152,7 +172,20 @@ export function stopScrolling(type?: "pause" | "stop" | "endofpage") {
     speedLabel.textContent = text;
     speedLabel.className = "speed-label";
     scrollState.label = text; // Update the label in scrollState
+    saveScrollLabelState();
   }
+}
+
+function savePauseStopState() {
+  checkSaveSettingsEnabled().then((saveEnabled) => {
+    if (saveEnabled) {
+      chrome.storage.local.set({
+        [`${STORAGE_PREFIX}scrollState_isPaused`]: scrollState.isPaused,
+        [`${STORAGE_PREFIX}scrollState_isClickStopped`]:
+          scrollState.isClickStopped,
+      });
+    }
+  });
 }
 
 export function doPauseStopOrResume(type: "pause" | "stop") {
@@ -162,31 +195,33 @@ export function doPauseStopOrResume(type: "pause" | "stop") {
     wasLudicrous =
       document.querySelector(".speed-label")?.classList.contains("ludicrous") ??
       false;
-    isClickStopped = type === "stop";
-    isPaused = type === "pause";
+    scrollState.isClickStopped = type === "stop";
+    scrollState.isPaused = type === "pause";
     stopScrolling(type);
-  } else if (isPaused && type === "stop") {
-    isPaused = false;
-    isClickStopped = true;
+  } else if (scrollState.isPaused && type === "stop") {
+    scrollState.isPaused = false;
+    scrollState.isClickStopped = true;
     stopScrolling(type);
   } else if (
-    (isPaused && type === "pause") ||
-    (isClickStopped && type === "stop")
+    (scrollState.isPaused && type === "pause") ||
+    (scrollState.isClickStopped && type === "stop")
   ) {
-    if (isClickStopped && type === "stop") {
-      isClickStopped = false;
+    if (scrollState.isClickStopped && type === "stop") {
+      scrollState.isClickStopped = false;
       // There's actually a bug here, because we click to resume
       // and the mouse is ALREADY hovering, so we dispatch a pause hover event
       // To trigger a pause again. Or else it becomes inverted.
-      isPaused = true;
+      scrollState.isPaused = true;
       stopScrolling("pause");
     } else {
-      isPaused = false;
-      isClickStopped = false;
+      scrollState.isPaused = false;
+      scrollState.isClickStopped = false;
       resumeScrolling();
     }
   }
+  savePauseStopState();
 }
+
 function resumeScrolling() {
   const prevValue = parseInt(prevScrollValue);
   if (!scrollState.isScrolling && prevValue > 0) {
@@ -210,16 +245,19 @@ function resumeScrolling() {
   }
 }
 
-export function updateScrollSpeed(speed: number) {
-  scrollState.speed = speed;
-  if (scrollState.isScrolling) {
-    startInterval(speed); // Restart with new speed
-  }
-}
-
 // Convert slider value (0-100) to actual scroll speed
-export function calculateScrollSpeed(sliderValue: number): number {
+function calculateScrollSpeed(sliderValue: number): number {
   // Exponential increase in speed, but half as fast as before
   // At 100%, speed will be 5.5 pixels per 50ms (ludicrous!)
   return sliderValue === 0 ? 0 : Math.pow(sliderValue / 100, 2) * 5 + 0.5;
+}
+
+function saveScrollLabelState() {
+  checkSaveSettingsEnabled().then((saveEnabled) => {
+    if (saveEnabled) {
+      chrome.storage.local.set({
+        [`${STORAGE_PREFIX}scrollLabel`]: scrollState.label,
+      });
+    }
+  });
 }
