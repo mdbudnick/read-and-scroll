@@ -68,15 +68,14 @@ loadScrollStateFromStorage().then((state) => {
 let scrollInterval: number | null = null;
 
 async function saveScrollSettings() {
-  checkSaveSettingsEnabled().then((saveEnabled) => {
-    if (saveEnabled) {
-      chrome.storage.local.set({
-        [`${STORAGE_PREFIX}isScrolling`]: scrollState.isScrolling,
-        [`${STORAGE_PREFIX}value`]: scrollState.value,
-        [`${STORAGE_PREFIX}speed`]: scrollState.speed,
-      });
-    }
-  });
+  const saveEnabled = await checkSaveSettingsEnabled();
+  if (saveEnabled) {
+    chrome.storage.local.set({
+      [`${STORAGE_PREFIX}isScrolling`]: scrollState.isScrolling,
+      [`${STORAGE_PREFIX}value`]: scrollState.value,
+      [`${STORAGE_PREFIX}speed`]: scrollState.speed,
+    });
+  }
 }
 
 export function startScrolling(value: number, labelText?: string) {
