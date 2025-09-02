@@ -10,7 +10,6 @@ import {
 import type { StylePreferences } from "./styles/reader";
 
 const defaultPreferences: StylePreferences = {
-  width: "50%",
   fontSize: "18px",
   theme: "light",
   imageSize: "normal",
