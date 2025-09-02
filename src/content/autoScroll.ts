@@ -31,34 +31,33 @@ async function checkSaveSettingsEnabled(): Promise<boolean> {
 }
 
 export async function loadScrollStateFromStorage(): Promise<ScrollState> {
-  return new Promise((resolve) => {
-    checkSaveSettingsEnabled().then((saveEnabled) => {
-      if (saveEnabled) {
-        const scrollKeys = Object.keys(defaultScrollState).map(
-          (key) => `${STORAGE_PREFIX}${key}`
-        );
-        chrome.storage.local.get(scrollKeys, (scrollResult) => {
-          const loadedScrollState: Partial<ScrollState> = {};
+  return new Promise(async (resolve) => {
+    const saveEnabled = await checkSaveSettingsEnabled();
+    if (saveEnabled) {
+      const scrollKeys = Object.keys(defaultScrollState).map(
+        (key) => `${STORAGE_PREFIX}${key}`
+      );
+      chrome.storage.local.get(scrollKeys, (scrollResult) => {
+        const loadedScrollState: Partial<ScrollState> = {};
 
-          Object.keys(defaultScrollState).forEach((key) => {
-            const storageKey = `${STORAGE_PREFIX}${key}`;
-            if (scrollResult[storageKey] !== undefined) {
-              loadedScrollState[key as keyof ScrollState] =
-                scrollResult[storageKey];
-            }
-          });
-
-          const mergedScrollState = {
-            ...defaultScrollState,
-            ...loadedScrollState,
-          };
-          resolve(mergedScrollState);
+        Object.keys(defaultScrollState).forEach((key) => {
+          const storageKey = `${STORAGE_PREFIX}${key}`;
+          if (scrollResult[storageKey] !== undefined) {
+            loadedScrollState[key as keyof ScrollState] =
+              scrollResult[storageKey];
+          }
         });
-      } else {
-        // saveSettings is disabled, use defaults
-        resolve(defaultScrollState);
-      }
-    });
+
+        const mergedScrollState = {
+          ...defaultScrollState,
+          ...loadedScrollState,
+        };
+        resolve(mergedScrollState);
+      });
+    } else {
+      // saveSettings is disabled, use defaults
+      resolve(defaultScrollState);
+    }
   });
 }
 
