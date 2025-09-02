@@ -198,16 +198,16 @@ export function generateCSS(prefs: StylePreferences, themes: Theme): string {
       display: flex !important;
       justify-content: center !important;
       padding: 2rem !important;
-      padding-left: calc(2rem + 240px) !important; /* Account for controls width (40px left + 200px min-width) */
       min-height: 100vh !important;
       box-sizing: border-box !important;
+      /* Offset content to account for asymmetric layout due to controls */
+      transform: translateX(120px) !important; /* Half of controls width (240px / 2) */
     }
 
     /* Responsive adjustments for smaller screens */
     @media (max-width: 768px) {
       #read-and-scroll-wrapper {
-        padding-left: 2rem !important; /* Reset to original padding on mobile */
-        padding-right: 2rem !important;
+        transform: none !important; /* Reset transform on mobile */
       }
     }
     
