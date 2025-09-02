@@ -1,3 +1,5 @@
 export default defineBackground(() => {
-  console.log('Hello background!', { id: browser.runtime.id });
+  chrome.runtime.onInstalled.addListener(() => {
+    console.log("Read and Scroll extension installed.");
+  });
 });
