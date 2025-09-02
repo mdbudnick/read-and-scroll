@@ -1,4 +1,4 @@
-const STORAGE_PREFIX = "readAndScrollConfig_";
+import { chromeStorageLocal, STORAGE_PREFIX } from "../utils/chromeStorage";
 
 export interface ScrollState {
   isScrolling: boolean;
@@ -21,44 +21,37 @@ export const defaultScrollState: ScrollState = {
 const scrollState: ScrollState = { ...defaultScrollState };
 
 async function checkSaveSettingsEnabled(): Promise<boolean> {
-  return new Promise((resolve) => {
-    chrome.storage.local.get([`${STORAGE_PREFIX}saveSettings`], (result) => {
-      const enabled =
-        String(result[`${STORAGE_PREFIX}saveSettings`]) === "true";
-      resolve(enabled);
-    });
-  });
+  const result = await chromeStorageLocal.get([
+    `${STORAGE_PREFIX}saveSettings`,
+  ]);
+  return String(result[`${STORAGE_PREFIX}saveSettings`]) === "true";
 }
 
 export async function loadScrollStateFromStorage(): Promise<ScrollState> {
-  return new Promise(async (resolve) => {
-    const saveEnabled = await checkSaveSettingsEnabled();
-    if (saveEnabled) {
-      const scrollKeys = Object.keys(defaultScrollState).map(
-        (key) => `${STORAGE_PREFIX}${key}`
-      );
-      chrome.storage.local.get(scrollKeys, (scrollResult) => {
-        const loadedScrollState: Partial<ScrollState> = {};
+  const saveEnabled = await checkSaveSettingsEnabled();
+  if (saveEnabled) {
+    const scrollKeys = Object.keys(defaultScrollState).map(
+      (key) => `${STORAGE_PREFIX}${key}`
+    );
+    const scrollResult = await chromeStorageLocal.get(scrollKeys);
+    const loadedScrollState: Partial<ScrollState> = {};
 
-        Object.keys(defaultScrollState).forEach((key) => {
-          const storageKey = `${STORAGE_PREFIX}${key}`;
-          if (scrollResult[storageKey] !== undefined) {
-            loadedScrollState[key as keyof ScrollState] =
-              scrollResult[storageKey];
-          }
-        });
+    Object.keys(defaultScrollState).forEach((key) => {
+      const storageKey = `${STORAGE_PREFIX}${key}`;
+      if (scrollResult[storageKey] !== undefined) {
+        (loadedScrollState as Record<string, unknown>)[key] =
+          scrollResult[storageKey];
+      }
+    });
 
-        const mergedScrollState = {
-          ...defaultScrollState,
-          ...loadedScrollState,
-        };
-        resolve(mergedScrollState);
-      });
-    } else {
-      // saveSettings is disabled, use defaults
-      resolve(defaultScrollState);
-    }
-  });
+    return {
+      ...defaultScrollState,
+      ...loadedScrollState,
+    } as ScrollState;
+  } else {
+    // saveSettings is disabled, use defaults
+    return defaultScrollState;
+  }
 }
 
 loadScrollStateFromStorage().then((state) => {
@@ -68,13 +61,17 @@ loadScrollStateFromStorage().then((state) => {
 let scrollInterval: number | null = null;
 
 async function saveScrollSettings() {
-  const saveEnabled = await checkSaveSettingsEnabled();
-  if (saveEnabled) {
-    chrome.storage.local.set({
-      [`${STORAGE_PREFIX}isScrolling`]: scrollState.isScrolling,
-      [`${STORAGE_PREFIX}value`]: scrollState.value,
-      [`${STORAGE_PREFIX}speed`]: scrollState.speed,
-    });
+  try {
+    const saveEnabled = await checkSaveSettingsEnabled();
+    if (saveEnabled) {
+      await chromeStorageLocal.set({
+        [`${STORAGE_PREFIX}isScrolling`]: scrollState.isScrolling,
+        [`${STORAGE_PREFIX}value`]: scrollState.value,
+        [`${STORAGE_PREFIX}speed`]: scrollState.speed,
+      });
+    }
+  } catch (error) {
+    console.error('Failed to save scroll settings:', error);
   }
 }
 
@@ -147,7 +144,7 @@ export async function stopScrolling(type?: "pause" | "stop" | "endofpage") {
       false;
     scrollState.isClickStopped = type === "stop";
     scrollState.isPaused = type === "pause";
-    savePauseStopState();
+    void savePauseStopState();
   }
 
   const slider = document.querySelector(
@@ -172,15 +169,18 @@ export async function stopScrolling(type?: "pause" | "stop" | "endofpage") {
   }
 }
 
-function savePauseStopState() {
-  checkSaveSettingsEnabled().then((saveEnabled) => {
+async function savePauseStopState() {
+  try {
+    const saveEnabled = await checkSaveSettingsEnabled();
     if (saveEnabled) {
-      chrome.storage.local.set({
+      await chromeStorageLocal.set({
         [`${STORAGE_PREFIX}isPaused`]: scrollState.isPaused,
         [`${STORAGE_PREFIX}isClickStopped`]: scrollState.isClickStopped,
       });
     }
-  });
+  } catch (error) {
+    console.error('Failed to save pause/stop state:', error);
+  }
 }
 
 export function doPauseStopOrResume(type: "pause" | "stop") {
@@ -214,7 +214,7 @@ export function doPauseStopOrResume(type: "pause" | "stop") {
       resumeScrolling();
     }
   }
-  savePauseStopState();
+  void savePauseStopState();
 }
 
 function resumeScrolling() {
@@ -248,11 +248,14 @@ function calculateScrollSpeed(sliderValue: number): number {
 }
 
 async function saveScrollLabelState() {
-  checkSaveSettingsEnabled().then((saveEnabled) => {
+  try {
+    const saveEnabled = await checkSaveSettingsEnabled();
     if (saveEnabled) {
-      chrome.storage.local.set({
+      await chromeStorageLocal.set({
         [`${STORAGE_PREFIX}scrollLabel`]: scrollState.label,
       });
     }
-  });
+  } catch (error) {
+    console.error('Failed to save scroll label state:', error);
+  }
 }

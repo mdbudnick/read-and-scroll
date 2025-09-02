@@ -10,8 +10,7 @@ import {
   loadScrollStateFromStorage,
 } from "./autoScroll";
 import type { StylePreferences } from "./styles/reader";
-
-const STORAGE_PREFIX = "readAndScrollConfig_";
+import { chromeStorageLocal, STORAGE_PREFIX } from "../utils/chromeStorage";
 
 const defaultPreferences: StylePreferences = {
   fontSize: "18px",
@@ -27,48 +26,40 @@ const sizes = [
 ] as const;
 
 async function checkSaveSettingsEnabled(): Promise<boolean> {
-  return new Promise((resolve) => {
-    chrome.storage.local.get([`${STORAGE_PREFIX}saveSettings`], (result) => {
-      const enabled =
-        String(result[`${STORAGE_PREFIX}saveSettings`]) === "true";
-
-      resolve(enabled);
-    });
-  });
+  const result = await chromeStorageLocal.get([
+    `${STORAGE_PREFIX}saveSettings`,
+  ]);
+  return String(result[`${STORAGE_PREFIX}saveSettings`]) === "true";
 }
 
 async function loadPreferencesFromStorage(): Promise<StylePreferences> {
-  return new Promise((resolve) => {
-    chrome.storage.local.get([`${STORAGE_PREFIX}saveSettings`], (result) => {
-      const saveEnabled =
-        String(result[`${STORAGE_PREFIX}saveSettings`]) === "true";
+  const result = await chromeStorageLocal.get([
+    `${STORAGE_PREFIX}saveSettings`,
+  ]);
+  const saveEnabled =
+    String(result[`${STORAGE_PREFIX}saveSettings`]) === "true";
 
-      if (saveEnabled) {
-        // Get all preference keys from storage
-        const prefKeys = Object.keys(defaultPreferences).map(
-          (key) => `${STORAGE_PREFIX}${key}`
-        );
-        chrome.storage.local.get(prefKeys, (prefResult) => {
-          const loadedPrefs: Partial<StylePreferences> = {};
+  if (saveEnabled) {
+    // Get all preference keys from storage
+    const prefKeys = Object.keys(defaultPreferences).map(
+      (key) => `${STORAGE_PREFIX}${key}`
+    );
+    const prefResult = await chromeStorageLocal.get(prefKeys);
+    const loadedPrefs: Partial<StylePreferences> = {};
 
-          // Extract saved preferences
-          Object.keys(defaultPreferences).forEach((key) => {
-            const storageKey = `${STORAGE_PREFIX}${key}`;
-            if (prefResult[storageKey] !== undefined) {
-              loadedPrefs[key as keyof StylePreferences] =
-                prefResult[storageKey];
-            }
-          });
-
-          const mergedPrefs = { ...defaultPreferences, ...loadedPrefs };
-          resolve(mergedPrefs);
-        });
-      } else {
-        // saveSettings is disabled, use defaults
-        resolve(defaultPreferences);
+    // Extract saved preferences
+    Object.keys(defaultPreferences).forEach((key) => {
+      const storageKey = `${STORAGE_PREFIX}${key}`;
+      if (prefResult[storageKey] !== undefined) {
+        (loadedPrefs as Record<string, unknown>)[key] = prefResult[storageKey];
       }
     });
-  });
+
+    return { ...defaultPreferences, ...loadedPrefs } as StylePreferences;
+  } else {
+    // saveSettings is disabled, use defaults
+    return defaultPreferences;
+  }
 }
 
 let currentPreferences = { ...defaultPreferences };
@@ -86,12 +77,13 @@ loadPreferencesFromStorage().then((prefs) => {
     let originalBodyHTML: string | null = null;
     let originalScroll: number = 0;
 
-    function checkAlwaysEnabled() {
-      chrome.storage.local.get([`${STORAGE_PREFIX}alwaysEnabled`], (result) => {
-        if (result[`${STORAGE_PREFIX}alwaysEnabled`] && !readerEnabled) {
-          enableReader();
-        }
-      });
+    async function checkAlwaysEnabled() {
+      const result = await chromeStorageLocal.get([
+        `${STORAGE_PREFIX}alwaysEnabled`,
+      ]);
+      if (result[`${STORAGE_PREFIX}alwaysEnabled`] && !readerEnabled) {
+        enableReader();
+      }
     }
 
     if (document.readyState === "loading") {
@@ -140,7 +132,7 @@ loadPreferencesFromStorage().then((prefs) => {
       lightButton.className =
         currentPreferences.theme === "light" ? "active" : "";
       lightButton.addEventListener("click", () =>
-        updateStyles({ theme: "light" })
+        void updateStyles({ theme: "light" })
       );
 
       const darkButton = document.createElement("button");
@@ -148,7 +140,7 @@ loadPreferencesFromStorage().then((prefs) => {
       darkButton.className =
         currentPreferences.theme === "dark" ? "active" : "";
       darkButton.addEventListener("click", () =>
-        updateStyles({ theme: "dark" })
+        void updateStyles({ theme: "dark" })
       );
 
       const rainbowButton = document.createElement("button");
@@ -156,7 +148,7 @@ loadPreferencesFromStorage().then((prefs) => {
       rainbowButton.className =
         currentPreferences.theme === "rainbow" ? "active" : "";
       rainbowButton.addEventListener("click", () =>
-        updateStyles({ theme: "rainbow" })
+        void updateStyles({ theme: "rainbow" })
       );
 
       const starWarsButton = document.createElement("button");
@@ -164,7 +156,7 @@ loadPreferencesFromStorage().then((prefs) => {
       starWarsButton.className =
         currentPreferences.theme === "starwars" ? "active" : "";
       starWarsButton.addEventListener("click", () =>
-        updateStyles({ theme: "starwars" })
+        void updateStyles({ theme: "starwars" })
       );
 
       themeToggle.appendChild(lightButton);
@@ -183,7 +175,7 @@ loadPreferencesFromStorage().then((prefs) => {
           currentPreferences.fontSize === size ? "active" : ""
         }`;
         button.addEventListener("click", () =>
-          updateStyles({ fontSize: size })
+          void updateStyles({ fontSize: size })
         );
         fontSizes.appendChild(button);
       });
@@ -245,22 +237,24 @@ loadPreferencesFromStorage().then((prefs) => {
       }
     }
 
-    function updateStyles(newPrefs: Partial<StylePreferences>) {
+    async function updateStyles(newPrefs: Partial<StylePreferences>) {
       const styleEl = document.getElementById("read-and-scroll-styles");
 
       if (styleEl) {
         // Check Save Settings toggle and handle preference persistence
-        checkSaveSettingsEnabled().then((saveEnabled) => {
+        try {
+          const saveEnabled = await checkSaveSettingsEnabled();
           if (saveEnabled) {
-            Object.entries(newPrefs).forEach((entry) => {
-              const prefKey = `${STORAGE_PREFIX}${entry[0]}`;
-              const value = entry[1];
+            for (const [key, value] of Object.entries(newPrefs)) {
+              const prefKey = `${STORAGE_PREFIX}${key}`;
               if (value !== undefined) {
-                chrome.storage.local.set({ [prefKey]: value });
+                await chromeStorageLocal.set({ [prefKey]: value });
               }
-            });
+            }
           }
-        });
+        } catch (error) {
+          console.error('Failed to save preferences:', error);
+        }
 
         const updatedPrefs = { ...currentPreferences, ...newPrefs };
         styleEl.textContent =
@@ -419,7 +413,7 @@ loadPreferencesFromStorage().then((prefs) => {
       } else if (message.type === "GET_STATE") {
         sendResponse({ enabled: readerEnabled });
       } else if (message.type === "UPDATE_STYLES") {
-        updateStyles(message.preferences);
+        void updateStyles(message.preferences);
         sendResponse({ success: true });
       }
     });
