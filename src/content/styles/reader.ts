@@ -29,7 +29,6 @@ export interface ElementStyles {
 }
 
 export interface StylePreferences {
-  width: string;
   fontSize: string;
   theme: "light" | "dark" | "rainbow" | "starwars";
   imageSize: "normal" | "large" | "small";
@@ -42,7 +41,6 @@ export function generateElementStyles(
 ): ElementStyles {
   return {
     container: `
-      --rs-width: ${prefs.width};
       --rs-font-size: ${prefs.fontSize};
       --rs-bg-color: ${theme.background};
       --rs-text-color: ${theme.color};
@@ -194,13 +192,15 @@ export function generateCSS(prefs: StylePreferences, themes: Theme): string {
     }
 
     #read-and-scroll-wrapper {
+      position: absolute !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
       flex: 1 !important;
       display: flex !important;
       justify-content: center !important;
       padding: 2rem !important;
       min-height: 100vh !important;
       box-sizing: border-box !important;
-      /* True center in viewport - content centered regardless of controls */
     }
 
     /* Responsive adjustments for smaller screens */
