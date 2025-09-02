@@ -36,7 +36,7 @@
   }
 })();
 
-import { chromeStorageLocal, STORAGE_PREFIX } from "../../utils/chromeStorage";
+import { chromeStorageLocal, STORAGE_PREFIX } from "../utils/chromeStorage";
 
 document.addEventListener("DOMContentLoaded", async () => {
   const enabledToggle = document.getElementById(
