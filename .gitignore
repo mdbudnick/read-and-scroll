@@ -15,6 +15,13 @@ dist-ssr
 # Ignore build output
 dist/
 
+# WXT specific
+.output
+stats.html
+stats-*.json
+.wxt
+web-ext.config.ts
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
