@@ -18,6 +18,15 @@ export const controlStyles = (theme: ThemeColors) => `
     border: 1px solid ${theme.borderColor};
   }
 
+  /* Responsive adjustments for controls on smaller screens */
+  @media (max-width: 768px) {
+    #read-and-scroll-controls {
+      left: 10px !important;
+      min-width: 150px !important;
+      padding: 0.5rem !important;
+    }
+  }
+
   #read-and-scroll-controls .theme-toggle {
     display: flex;
     gap: 0.5rem;
