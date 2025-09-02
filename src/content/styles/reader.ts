@@ -200,13 +200,15 @@ export function generateCSS(prefs: StylePreferences, themes: Theme): string {
       padding: 2rem !important;
       min-height: 100vh !important;
       box-sizing: border-box !important;
-      /* Offset content to account for asymmetric layout due to controls */
-      transform: translateX(120px) !important; /* Half of controls width (240px / 2) */
+      /* Center content in the viewport by offsetting for controls panel */
+      margin-left: 240px !important; /* Full width of controls (40px offset + 200px width) */
+      transform: translateX(-120px) !important; /* Pull back by half to center in remaining space */
     }
 
     /* Responsive adjustments for smaller screens */
     @media (max-width: 768px) {
       #read-and-scroll-wrapper {
+        margin-left: 0 !important; /* Reset margin on mobile */
         transform: none !important; /* Reset transform on mobile */
       }
     }
