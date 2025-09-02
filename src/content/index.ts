@@ -131,32 +131,36 @@ loadPreferencesFromStorage().then((prefs) => {
       lightButton.innerHTML = "☀️";
       lightButton.className =
         currentPreferences.theme === "light" ? "active" : "";
-      lightButton.addEventListener("click", () =>
-        void updateStyles({ theme: "light" })
+      lightButton.addEventListener(
+        "click",
+        () => void updateStyles({ theme: "light" })
       );
 
       const darkButton = document.createElement("button");
       darkButton.innerHTML = "🌙";
       darkButton.className =
         currentPreferences.theme === "dark" ? "active" : "";
-      darkButton.addEventListener("click", () =>
-        void updateStyles({ theme: "dark" })
+      darkButton.addEventListener(
+        "click",
+        () => void updateStyles({ theme: "dark" })
       );
 
       const rainbowButton = document.createElement("button");
       rainbowButton.innerHTML = "🌈";
       rainbowButton.className =
         currentPreferences.theme === "rainbow" ? "active" : "";
-      rainbowButton.addEventListener("click", () =>
-        void updateStyles({ theme: "rainbow" })
+      rainbowButton.addEventListener(
+        "click",
+        () => void updateStyles({ theme: "rainbow" })
       );
 
       const starWarsButton = document.createElement("button");
       starWarsButton.innerHTML = "⭐";
       starWarsButton.className =
         currentPreferences.theme === "starwars" ? "active" : "";
-      starWarsButton.addEventListener("click", () =>
-        void updateStyles({ theme: "starwars" })
+      starWarsButton.addEventListener(
+        "click",
+        () => void updateStyles({ theme: "starwars" })
       );
 
       themeToggle.appendChild(lightButton);
@@ -174,8 +178,9 @@ loadPreferencesFromStorage().then((prefs) => {
         button.className = `font-size-button ${className} ${
           currentPreferences.fontSize === size ? "active" : ""
         }`;
-        button.addEventListener("click", () =>
-          void updateStyles({ fontSize: size })
+        button.addEventListener(
+          "click",
+          () => void updateStyles({ fontSize: size })
         );
         fontSizes.appendChild(button);
       });
@@ -253,7 +258,7 @@ loadPreferencesFromStorage().then((prefs) => {
             }
           }
         } catch (error) {
-          console.error('Failed to save preferences:', error);
+          console.error("Failed to save preferences:", error);
         }
 
         const updatedPrefs = { ...currentPreferences, ...newPrefs };
