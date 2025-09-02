@@ -1,20 +1,16 @@
 import * as readability from "@mozilla/readability";
-import { themes } from "../content/styles/theme";
-import { generateCSS } from "../content/styles/reader";
-import { controlStyles } from "../content/styles/controls";
+import { themes } from "./styles/theme";
+import { generateCSS } from "./styles/reader";
+import { controlStyles } from "./styles/controls";
 import {
   doPauseStopOrResume,
   startScrolling,
   stopScrolling,
   defaultScrollState,
   loadScrollStateFromStorage,
-} from "../content/autoScroll";
-import type { StylePreferences } from "../content/styles/reader";
+} from "./autoScroll";
+import type { StylePreferences } from "./styles/reader";
 import { chromeStorageLocal, STORAGE_PREFIX } from "../utils/chromeStorage";
-
-export default defineContentScript({
-  matches: ['<all_urls>'],
-  main() {
 
 const defaultPreferences: StylePreferences = {
   fontSize: "18px",
@@ -422,6 +418,4 @@ loadPreferencesFromStorage().then((prefs) => {
       }
     });
   });
-});
-  },
 });
