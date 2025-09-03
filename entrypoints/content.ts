@@ -1,4 +1,16 @@
 import * as readability from "@mozilla/readability";
+import { chromeStorageLocal, STORAGE_PREFIX } from "../utils/chromeStorage";
+import { themes } from "../utils/theme";
+import { generateCSS } from "../utils/reader";
+import { controlStyles } from "../utils/controls";
+import { 
+  startScrolling, 
+  stopScrolling, 
+  doPauseStopOrResume, 
+  loadScrollStateFromStorage, 
+  defaultScrollState 
+} from "../utils/autoScroll";
+import type { StylePreferences } from "../utils/reader";
 
 export default defineContentScript({
   matches: ["<all_urls>"],
@@ -375,6 +387,68 @@ export default defineContentScript({
           });
           container.addEventListener("mouseleave", () => {
             doPauseStopOrResume("pause"); // This will call resume if already paused
+          });
+
+          // Handle anchor link navigation in reader mode
+          container.addEventListener("click", (event) => {
+            const target = event.target as HTMLElement;
+            const link = target.closest("a");
+            
+            if (link && link.href) {
+              const url = new URL(link.href);
+              
+              // Handle internal anchor links
+              if (url.hash && (url.origin === window.location.origin && url.pathname === window.location.pathname)) {
+                event.preventDefault();
+                const targetId = url.hash.substring(1); // Remove the #
+                
+                // Try to find the target element by ID first
+                let targetElement = document.getElementById(targetId);
+                
+                // If not found by ID, try to find a heading with matching text
+                if (!targetElement) {
+                  const headings = container.querySelectorAll("h1, h2, h3, h4, h5, h6");
+                  for (const heading of headings) {
+                    const headingText = heading.textContent?.toLowerCase().trim();
+                    const targetText = targetId.toLowerCase().replace(/[-_]/g, " ");
+                    
+                    // Check if heading text matches the target ID (with some fuzzy matching)
+                    if (headingText && (
+                      headingText === targetText ||
+                      headingText.includes(targetText) ||
+                      targetText.includes(headingText) ||
+                      // Check for slug-like matches
+                      headingText.replace(/\s+/g, "-") === targetId ||
+                      headingText.replace(/\s+/g, "_") === targetId
+                    )) {
+                      targetElement = heading as HTMLElement;
+                      break;
+                    }
+                  }
+                }
+                
+                if (targetElement) {
+                  // Update the URL hash to reflect the navigation
+                  history.pushState(null, "", url.hash);
+                  
+                  // Scroll to the target element smoothly
+                  targetElement.scrollIntoView({ 
+                    behavior: "smooth", 
+                    block: "start" 
+                  });
+                  
+                  // Optional: Highlight the target element briefly
+                  const originalBg = targetElement.style.backgroundColor;
+                  targetElement.style.backgroundColor = currentPreferences.theme === "dark" ? "#444" : "#ffffcc";
+                  setTimeout(() => {
+                    targetElement.style.backgroundColor = originalBg;
+                  }, 2000);
+                }
+                
+                return; // Prevent further processing
+              }
+              // For external links, let them work normally
+            }
           });
 
           // Toggle scrolling on fast click (not drag)
