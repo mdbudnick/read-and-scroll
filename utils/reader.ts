@@ -113,6 +113,7 @@ export function generateElementStyles(
         background: ${
           theme.background === "white" ? "#f6f8fa" : "#2d333b"
         } !important;
+        color: ${theme.color} !important;
         padding: 0.2em 0.4em !important;
         border-radius: 3px !important;
         font-size: 0.9em !important;
@@ -121,6 +122,7 @@ export function generateElementStyles(
         background: ${
           theme.background === "white" ? "#f6f8fa" : "#2d333b"
         } !important;
+        color: ${theme.color} !important;
         padding: 1em !important;
         border-radius: 6px !important;
         overflow-x: auto !important;
@@ -302,6 +304,11 @@ export const generateCSS = (prefs: StylePreferences, themes: Theme): string => {
       background-clip: text;
       text-fill-color: transparent;
     }
+    .rainbow-theme code,
+    .rainbow-theme pre {
+      color: #222 !important;
+      background: #f6f8fa !important;
+    }
     .rainbow-theme p:nth-child(7n+1),
     .rainbow-theme li:nth-child(7n+1),
     .rainbow-theme h1:nth-child(7n+1) { background-position: 0% 50%; }
@@ -356,6 +363,12 @@ export const generateCSS = (prefs: StylePreferences, themes: Theme): string => {
       color: #ffe81f !important;
       text-shadow: 0 0 8px #ffe81f, 0 0 16px #000;
       background: none !important;
+    }
+    .starwars-theme code,
+    .starwars-theme pre {
+      color: #ffe81f !important;
+      background: rgba(0, 0, 0, 0.3) !important;
+      text-shadow: 0 0 8px #ffe81f, 0 0 16px #000;
     }
   `;
 }
