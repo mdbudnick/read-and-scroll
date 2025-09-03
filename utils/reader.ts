@@ -110,24 +110,22 @@ export function generateElementStyles(
       `,
       code: `
         font-family: 'SF Mono', Consolas, Monaco, 'Andale Mono', monospace !important;
-        background: ${
-          theme.background === "white" ? "#f6f8fa" : "#2d333b"
-        } !important;
+        background: ${theme.background} !important;
         color: ${theme.color} !important;
         padding: 0.2em 0.4em !important;
         border-radius: 3px !important;
         font-size: 0.9em !important;
+        -webkit-text-fill-color: ${theme.color} !important;
       `,
       pre: `
-        background: ${
-          theme.background === "white" ? "#f6f8fa" : "#2d333b"
-        } !important;
+        background: ${theme.background} !important;
         color: ${theme.color} !important;
         padding: 1em !important;
         border-radius: 6px !important;
         overflow-x: auto !important;
         margin: 1.5em 0 !important;
         font-size: inherit !important;
+        -webkit-text-fill-color: ${theme.color} !important;
       `,
     },
     media: {
@@ -290,6 +288,7 @@ export const generateCSS = (prefs: StylePreferences, themes: Theme): string => {
       color: #222 !important;
     }
     .rainbow-theme p,
+    .rainbow-theme code,
     .rainbow-theme li,
     .rainbow-theme h1,
     .rainbow-theme h2,
@@ -371,4 +370,4 @@ export const generateCSS = (prefs: StylePreferences, themes: Theme): string => {
       text-shadow: 0 0 8px #ffe81f, 0 0 16px #000;
     }
   `;
-}
+};
