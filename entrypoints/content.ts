@@ -1,15 +1,4 @@
 import * as readability from "@mozilla/readability";
-import { chromeStorageLocal, STORAGE_PREFIX } from "../utils/chromeStorage";
-import { 
-  loadScrollStateFromStorage, 
-  defaultScrollState, 
-  startScrolling, 
-  stopScrolling, 
-  doPauseStopOrResume 
-} from "../utils/autoScroll";
-import { controlStyles } from "../utils/controls";
-import { generateCSS, type StylePreferences } from "../utils/reader";
-import { themes } from "../utils/theme";
 
 export default defineContentScript({
   matches: ["<all_urls>"],
