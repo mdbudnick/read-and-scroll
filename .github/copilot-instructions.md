@@ -6,6 +6,10 @@ Always reference these instructions first and fallback to search or bash command
 
 ## Working Effectively
 
+## Manifest version
+
+Whenever making a change to the project in a PR, ensure that the manifest version is updated in `wxt.config.ts` under the `manifest.version` field. This is important for proper versioning when publishing updates to the Chrome Web Store or Firefox Add-ons. Please use semantic versioning (e.g., 1.0.1, 1.1.0, 2.0.0) and justify the version bump in the PR description.
+
 ## Global Wxt imports
 
 There is no need to import anything directly that is exported from the utils folder.
