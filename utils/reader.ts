@@ -110,22 +110,22 @@ export function generateElementStyles(
       `,
       code: `
         font-family: 'SF Mono', Consolas, Monaco, 'Andale Mono', monospace !important;
-        background: ${
-          theme.background === "white" ? "#f6f8fa" : "#2d333b"
-        } !important;
+        background: ${theme.background} !important;
+        color: ${theme.color} !important;
         padding: 0.2em 0.4em !important;
         border-radius: 3px !important;
         font-size: 0.9em !important;
+        -webkit-text-fill-color: ${theme.color} !important;
       `,
       pre: `
-        background: ${
-          theme.background === "white" ? "#f6f8fa" : "#2d333b"
-        } !important;
+        background: ${theme.background} !important;
+        color: ${theme.color} !important;
         padding: 1em !important;
         border-radius: 6px !important;
         overflow-x: auto !important;
         margin: 1.5em 0 !important;
         font-size: inherit !important;
+        -webkit-text-fill-color: ${theme.color} !important;
       `,
     },
     media: {
@@ -288,6 +288,7 @@ export const generateCSS = (prefs: StylePreferences, themes: Theme): string => {
       color: #222 !important;
     }
     .rainbow-theme p,
+    .rainbow-theme code,
     .rainbow-theme li,
     .rainbow-theme h1,
     .rainbow-theme h2,
@@ -301,6 +302,11 @@ export const generateCSS = (prefs: StylePreferences, themes: Theme): string => {
       -webkit-text-fill-color: transparent;
       background-clip: text;
       text-fill-color: transparent;
+    }
+    .rainbow-theme code,
+    .rainbow-theme pre {
+      color: #222 !important;
+      background: #f6f8fa !important;
     }
     .rainbow-theme p:nth-child(7n+1),
     .rainbow-theme li:nth-child(7n+1),
@@ -357,5 +363,11 @@ export const generateCSS = (prefs: StylePreferences, themes: Theme): string => {
       text-shadow: 0 0 8px #ffe81f, 0 0 16px #000;
       background: none !important;
     }
+    .starwars-theme code,
+    .starwars-theme pre {
+      color: #ffe81f !important;
+      background: rgba(0, 0, 0, 0.3) !important;
+      text-shadow: 0 0 8px #ffe81f, 0 0 16px #000;
+    }
   `;
-}
+};

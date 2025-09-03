@@ -17,7 +17,7 @@ export interface Theme {
 export const themes: Theme = {
   light: {
     background: "white",
-    color: "#333",
+    color: "black",
     shadow: "rgba(0, 0, 0, 0.1)",
     linkColor: "#0366d6",
     headingColor: "#111",
@@ -32,8 +32,8 @@ export const themes: Theme = {
     borderColor: "#30363d",
   },
   rainbow: {
-    background: "#d0e7ff", // pastel blue
-    color: "#333",
+    background: "lightblue", // pastel blue
+    color: "black",
     shadow: "rgba(0, 0, 0, 0.1)",
     linkColor: "#0366d6",
     headingColor: "#111",
