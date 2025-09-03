@@ -6,7 +6,7 @@ export default defineConfig({
   manifest: {
     name: "Read and Scroll",
     short_name: "ReadScroll",
-    version: "2.0.2",
+    version: "2.1.0",
     description:
       "An extension that adds a reader mode and auto-scroll to any website in Chrome.",
     permissions: ["activeTab", "storage"],
