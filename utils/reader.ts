@@ -88,12 +88,14 @@ export function generateElementStyles(
       paragraph: `
         margin: 0 0 1.5em !important;
         line-height: 1.8 !important;
+        font-size: inherit !important;
       `,
       link: `
         color: ${theme.linkColor} !important;
         text-decoration: none !important;
         border-bottom: 1px solid transparent !important;
         transition: border-color 0.2s ease !important;
+        font-size: inherit !important;
         &:hover {
           border-bottom-color: ${theme.linkColor} !important;
         }
@@ -104,6 +106,7 @@ export function generateElementStyles(
         border-left: 4px solid ${theme.borderColor} !important;
         font-style: italic !important;
         color: ${theme.color}dd !important;
+        font-size: inherit !important;
       `,
       code: `
         font-family: 'SF Mono', Consolas, Monaco, 'Andale Mono', monospace !important;
@@ -122,6 +125,7 @@ export function generateElementStyles(
         border-radius: 6px !important;
         overflow-x: auto !important;
         margin: 1.5em 0 !important;
+        font-size: inherit !important;
       `,
     },
     media: {
@@ -156,13 +160,16 @@ export function generateElementStyles(
       unordered: `
         margin: 1em 0 1.5em !important;
         padding-left: 2em !important;
+        font-size: inherit !important;
       `,
       ordered: `
         margin: 1em 0 1.5em !important;
         padding-left: 2em !important;
+        font-size: inherit !important;
       `,
       listItem: `
         margin: 0.5em 0 !important;
+        font-size: inherit !important;
       `,
     },
   };
