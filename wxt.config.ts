@@ -10,6 +10,12 @@ export default defineConfig({
     description:
       "An extension that adds a reader mode and auto-scroll to any website",
     permissions: ["activeTab", "storage"],
+    browser_specific_settings: {
+      gecko: {
+        id: "@read-and-scroll.waves-workshop",
+        strict_min_version: "58.0",
+      },
+    },
     action: {
       default_icon: {
         "16": "icon/rs-16.png",
