@@ -1,4 +1,5 @@
 import * as readability from "@mozilla/readability";
+import DOMPurify from "dompurify";
 
 export default defineContentScript({
   matches: ["<all_urls>"],
@@ -120,7 +121,7 @@ export default defineContentScript({
           themeToggle.className = "theme-toggle";
 
           const lightButton = document.createElement("button");
-          lightButton.innerHTML = "☀️";
+          lightButton.textContent = "☀️";
           lightButton.className =
             currentPreferences.theme === "light" ? "active" : "";
           lightButton.addEventListener(
@@ -129,7 +130,7 @@ export default defineContentScript({
           );
 
           const darkButton = document.createElement("button");
-          darkButton.innerHTML = "🌙";
+          darkButton.textContent = "🌙";
           darkButton.className =
             currentPreferences.theme === "dark" ? "active" : "";
           darkButton.addEventListener(
@@ -138,7 +139,7 @@ export default defineContentScript({
           );
 
           const rainbowButton = document.createElement("button");
-          rainbowButton.innerHTML = "🌈";
+          rainbowButton.textContent = "🌈";
           rainbowButton.className =
             currentPreferences.theme === "rainbow" ? "active" : "";
           rainbowButton.addEventListener(
@@ -147,7 +148,7 @@ export default defineContentScript({
           );
 
           const starWarsButton = document.createElement("button");
-          starWarsButton.innerHTML = "⭐";
+          starWarsButton.textContent = "⭐";
           starWarsButton.className =
             currentPreferences.theme === "starwars" ? "active" : "";
           starWarsButton.addEventListener(
@@ -265,12 +266,12 @@ export default defineContentScript({
                 .forEach((button) => {
                   button.classList.toggle(
                     "active",
-                    (button.innerHTML === "☀️" && newPrefs.theme === "light") ||
-                      (button.innerHTML === "🌙" &&
+                    (button.textContent === "☀️" && newPrefs.theme === "light") ||
+                      (button.textContent === "🌙" &&
                         newPrefs.theme === "dark") ||
-                      (button.innerHTML === "🌈" &&
+                      (button.textContent === "🌈" &&
                         newPrefs.theme === "rainbow") ||
-                      (button.innerHTML === "⭐" &&
+                      (button.textContent === "⭐" &&
                         newPrefs.theme === "starwars")
                   );
                 });
@@ -362,7 +363,8 @@ export default defineContentScript({
               html += `<div class="readability-published" style="font-size:0.98em;color:#888;margin-bottom:1em;">Published: ${date.toLocaleString()}</div>`;
             }
             html += article.content;
-            container.innerHTML = html;
+            // Sanitize HTML content before setting innerHTML to prevent XSS
+            container.innerHTML = DOMPurify.sanitize(html);
 
             // Add click handler for links to ensure proper navigation
             container.addEventListener("click", (event) => {
@@ -377,8 +379,9 @@ export default defineContentScript({
             });
           } else {
             console.log("[Read and Scroll] No main content found.");
-            container.innerHTML =
-              "<p>Could not extract readable content from this page.</p>";
+            const fallbackMessage = document.createElement("p");
+            fallbackMessage.textContent = "Could not extract readable content from this page.";
+            container.appendChild(fallbackMessage);
           }
 
           // Pause scrolling on hover, resume on mouse leave
