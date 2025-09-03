@@ -363,6 +363,18 @@ export default defineContentScript({
             }
             html += article.content;
             container.innerHTML = html;
+
+            // Add click handler for links to ensure proper navigation
+            container.addEventListener("click", (event) => {
+              const target = event.target as HTMLElement;
+              // Check if the clicked element is a link or inside a link
+              const link = target.closest("a");
+              if (link && link.href) {
+                event.preventDefault();
+                // Navigate to the link destination
+                window.location.href = link.href;
+              }
+            });
           } else {
             console.log("[Read and Scroll] No main content found.");
             container.innerHTML =
