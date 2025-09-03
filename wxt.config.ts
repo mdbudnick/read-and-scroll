@@ -8,7 +8,7 @@ export default defineConfig({
     short_name: "ReadScroll",
     version: "2.1.0",
     description:
-      "An extension that adds a reader mode and auto-scroll to any website in Chrome.",
+      "An extension that adds a reader mode and auto-scroll to any website",
     permissions: ["activeTab", "storage"],
     action: {
       default_icon: {
