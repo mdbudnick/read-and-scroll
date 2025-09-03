@@ -20,7 +20,7 @@
 
 # =============================== CONFIGURATION ================================
 # Path to your input image file (e.g., "./my_photo.jpg" or "/home/user/images/icon.png")
-INPUT_IMAGE="./rs.jpg"
+INPUT_IMAGE="./icon/rs-1024.png"
 
 # Directory where the resized images will be saved
 OUTPUT_DIR="./output_icons"
@@ -108,7 +108,7 @@ if [ -d "$OUTPUT_DIR" ]; then
     mkdir -p "$BACKUP_DIR" # Ensure backup directory exists
     BACKED_UP=false
     for size in "${SIZES[@]}"; do
-        FILE_TO_CHECK="${OUTPUT_DIR}/${BASE_NAME}-${size}.${EXTENSION}"
+        FILE_TO_CHECK="${OUTPUT_DIR}/rs-${size}.${EXTENSION}"
         if [ -f "$FILE_TO_CHECK" ]; then
             echo "  - Backing up: $(basename "$FILE_TO_CHECK") to $BACKUP_DIR/"
             mv "$FILE_TO_CHECK" "$BACKUP_DIR/"
@@ -129,7 +129,7 @@ echo "Output directory '$OUTPUT_DIR' ensured."
 # Resize images
 echo "Starting image resizing process..."
 for size in "${SIZES[@]}"; do
-    OUTPUT_FILE="${OUTPUT_DIR}/${BASE_NAME}-${size}.${EXTENSION}"
+    OUTPUT_FILE="${OUTPUT_DIR}/rs-${size}.${EXTENSION}"
     echo "  - Resizing to ${size}x${size} pixels and saving as: $(basename "$OUTPUT_FILE")"
     if magick "$INPUT_IMAGE" -resize "${size}x${size}" "$OUTPUT_FILE"; then
         echo "    Success: '$OUTPUT_FILE' created."
