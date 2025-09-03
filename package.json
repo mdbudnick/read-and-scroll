@@ -2,7 +2,7 @@
   "name": "read-and-scroll",
   "description": "An extension that adds a reader mode and auto-scroll to any website in Chrome.",
   "private": true,
-  "version": "1.0.2",
+  "version": "2.0.2",
   "type": "module",
   "scripts": {
     "dev": "wxt",
