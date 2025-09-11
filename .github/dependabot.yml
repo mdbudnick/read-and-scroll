@@ -1,0 +1,47 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "friday"
+      time: "05:00"
+      timezone: "America/New_York"
+    open-pull-requests-limit: 10
+    assignees:
+      - "mdbudnick"
+    commit-message:
+      prefix: "npm"
+      include: "scope"
+    # Group dependencies to reduce PR noise
+    groups:
+      expo-dependencies:
+        patterns:
+          - "expo*"
+          - "@expo/*"
+      react-dependencies:
+        patterns:
+          - "react*"
+          - "@types/react*"
+      development-dependencies:
+        dependency-type: "development"
+      production-dependencies:
+        dependency-type: "production"
+    # Security updates will still be created immediately
+    allow:
+      - dependency-type: "all"
+    # Ignore specific packages if needed (uncomment and modify as needed)
+    # ignore:
+    #   - dependency-name: "package-name"
+    #     versions: ["1.x", "2.x"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "friday"
+      time: "05:00"
+      timezone: "America/New_York"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
